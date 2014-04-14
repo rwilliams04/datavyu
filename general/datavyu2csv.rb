@@ -39,44 +39,69 @@ begin
   puts "\nCreating new directory '#{outputDir}'"
   Dir.mkdir(outputDir)
 
-  puts "\n\n=================BEGIN EXTRACTION================="
+  puts "\n\n=================BEGIN EXTRACTION=================\n\n"
+
+  logFile = File.new(File.join(outputDir, "log.txt"), "wb")
+  logFile.write("datavyu2csv initated at: #{Time.now.strftime('Date: %m/%d/%Y Time: %H:%M')}")
 
   # iterate through each .opf file
   opfFiles.each do |opfFile|
+
     filebasename = opfFile[/.*(?=\..+$)/]
-    puts "\n\nLoading file... '#{filebasename}.opf'"
+    logText = "*Loading file: '#{filebasename}.opf'"
+    puts logText
+    logFile.write("\n\n#{'=' * 80}\n#{logText}")
 
     begin
       # load datavyu file
       $db,$pj = load_db(File.join(Dir.pwd, opfFile))
       # get list of column names
       columnList = getColumnList()
-      if columnList.nil?
-        puts "\nFile is empty!"
-      else
 
+      if columnList.nil?
+        logText = "!! File is empty"
+        puts logText
+        logFile.write("\n#{'-' * 80}\n#{logText}\n#{'-' * 80}\n")
+
+      else
         # start reading in columns one-by-one
         columnList.each do |col_str|
-          puts "\n..Found column: #{col_str}"
           col = getColumn("#{col_str}")
+
+          logText = "..Found column: #{col_str}"
+          puts logText
+          logFile.write("\n#{logText}\n")
+
           firstCell = col.cells[0] # used below to find argument names
+
           if firstCell.nil?
-            puts "\n==No coded cells found! Skipping column==\n"
+            logText = "!! No coded cells found! Skipping column"
+            puts logText
+            logFile.write("\n#{'-' * 80}\n#{logText}\n#{'-' * 80}\n")
+
           else
             # get names of custom arguments
             args = firstCell.arglist
-            puts "\n...Found arguments: #{args.join(', ')}"
+
+            logText = "...Found arguments: #{args.join(', ')}"
+            puts logText
+            logFile.write("\n#{logText}\n")
+
             # create output file
             newFileStr = "#{col_str}__#{filebasename}.csv"
             csv_out = File.new(File.join(outputDir, newFileStr), "wb")
             csv_out.write("#{['file', 'column', 'ordinal', 'onset', 'offset', args].join(',')}")
-            puts "\n....Writing cells to file: '#{newFileStr}'"
+
+            logText = "....Writing cells to file: '#{newFileStr}'"
+            puts logText
+            logFile.write("\n#{logText}\n")
 
             # iterate through each of the cells from the current column
+            # replaces <arg> with a blank space
+            # assumes first 3 args are ord, on, off and the rest are custom
+            # write cell contents to file
             col.cells.each do |cell|
               cell_codes = printCellCodes(cell)
-              # replaces <arg> with a blank space
-              # assumes first 3 args are ord, on, off and the rest are custom
               arg_num = 3
               cell_codes.drop(3).each do |blnk|
                 if blnk == "<#{args[arg_num-3]}>"
@@ -84,17 +109,27 @@ begin
                 end
                 arg_num = arg_num+1
               end
-              # write cell contents
               csv_out.write("\n#{[filebasename, col_str, cell_codes].join(',')}")
             end
-            puts "\n.....done."
+
+            logText = ".....done with .csv file"
+            puts logText
+            logFile.write("\n#{logText}\n")
+            csv_out.close
+
           end
-          csv_out.close
         end
       end
     rescue
-      puts"\n==Error with file.==\n"
+
+      logText = "\n!! Error with file: #{opfFile} See log.\n"
+      puts logText
+      logFile.write("\n#{'-' * 80}\n#{logText}\n#{'-' * 80}\n")
+
     end
   end
+
+  logFile.close
   puts "\n=================END EXTRACTION================="
+
 end
