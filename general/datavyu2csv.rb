@@ -104,14 +104,14 @@ begin
               cell_codes = printCellCodes(cell)
               arg_num = 3
               cell_codes.drop(3).each do |blnk|
-                if blnk == "<#{args[arg_num-3]}>"
+                if blnk.downcase == "<#{args[arg_num-3]}>"
                   cell_codes[arg_num] = ""
                 end
                 arg_num = arg_num+1
               end
               csv_out.write("\n#{[filebasename, col_str, cell_codes].join(',')}")
             end
-
+            csv_out.write("\n")
             logText = ".....done with .csv file"
             puts logText
             logFile.write("\n#{logText}\n")
