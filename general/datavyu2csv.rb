@@ -129,6 +129,7 @@ begin
     end
   end
 
+  logFile.write("\n\n#{'=' * 80}\n#{logText}")
   logFile.close
   puts "\n=================END EXTRACTION================="
 
