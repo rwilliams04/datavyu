@@ -133,12 +133,12 @@ begin
 
       logText = "\n!! Error with file: #{opfFile} See log.\n"
       puts logText
-      logFile.write("\n#{'-' * 80}\n#{logText}\n#{'-' * 80}\n")
+      logFile.write("\n#{'-' * 80}\n#{logText}\n#{'-' * 80}\n\n")
 
     end
   end
 
-  logFile.write("\n\n#{'>' * 80}\n#{logText}")
+  logFile.write("\n\n#{'>' * 80}")
   logFile.close
   puts "\n=================END EXTRACTION================="
 
