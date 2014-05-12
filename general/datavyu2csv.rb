@@ -30,10 +30,12 @@ begin
 
   # get path of chosen folder
   rootFolder = pickFolder()
+
   # change current directory to rootFolder then search for .opf files
   Dir.chdir(rootFolder)
   puts "\nTraversing through '#{rootFolder}' for .opf files..."
   opfFiles = Dir.glob("**/*.opf").sort
+
   # make output directory
   outputDir = "datavyu_output_" + Time.now.strftime("%m-%d-%Y_%H-%M")
   puts "\nCreating new directory '#{outputDir}'"
@@ -41,8 +43,12 @@ begin
 
   puts "\n\n=================BEGIN EXTRACTION=================\n\n"
 
+  # header information
   logFile = File.new(File.join(outputDir, "log.txt"), "wb")
   logFile.write("datavyu2csv initated at: #{Time.now.strftime('Date: %m/%d/%Y Time: %H:%M')}")
+
+  logFile.write("\n\nFound the following files:\n")
+  opfFiles.each do |opf| logFile.write("\n#{opf}") end
 
   # iterate through each .opf file
   opfFiles.each do |opfFile|
@@ -55,6 +61,7 @@ begin
     begin
       # load datavyu file
       $db,$pj = load_db(File.join(Dir.pwd, opfFile))
+
       # get list of column names
       columnList = getColumnList()
 
@@ -104,13 +111,15 @@ begin
               cell_codes = printCellCodes(cell)
               arg_num = 3
               cell_codes.drop(3).each do |blnk|
-                if blnk.downcase == "<#{args[arg_num-3]}>"
+                if blnk.downcase == "<#{args[arg_num-3]}>" # API converts everything to lowercase
                   cell_codes[arg_num] = ""
                 end
-                arg_num = arg_num+1
+                arg_num = arg_num + 1
               end
               csv_out.write("\n#{[filebasename, col_str, cell_codes].join(',')}")
             end
+
+            # make empty line at end of file and write log info and close csv file
             csv_out.write("\n")
             logText = ".....done with .csv file"
             puts logText
@@ -120,7 +129,7 @@ begin
           end
         end
       end
-    rescue
+    rescue # if error occurs do this
 
       logText = "\n!! Error with file: #{opfFile} See log.\n"
       puts logText
@@ -129,7 +138,7 @@ begin
     end
   end
 
-  logFile.write("\n\n#{'=' * 80}\n#{logText}")
+  logFile.write("\n\n#{'>' * 80}\n#{logText}")
   logFile.close
   puts "\n=================END EXTRACTION================="
 
