@@ -1,53 +1,93 @@
 require 'Datavyu_API.rb'
 
+# function to calculate a random value from range
 def rint(min, max)
 	return rand(max - min) + min
 end
 
-def tinterval(time, stepsize)
-	x =  rint(1 + (time - stepsize), time)
-	y =  rint(1 + (time - stepsize), time)
+# function to make onset offset timestamps
+def tinterval(onset, offset)
+	x =  rint(onset + 1, offset - 1)
+	y =  rint(onset + 1, offset - 1)
 	return [x, y].sort
 end
 
 begin
-	# time gap in ms
-	stepInterval = 5000;
+	# number of trials as a range
+	trialRange = (1..8).to_a
+
+	# length of each trial in milliseconds
+	trialLength = 1000 * 30
+
+	# duration of holding time and adjuster
+	holdDuration = 7500
+	holdAdjust = holdDuration * 0.5
 
 	# codes to use for <toy> arg
-	toy_codes = ["bunny", "car", "put", "open", "drink", "cookie", "eat", "bear"]
+	toyCodes = ["bunny", "car", "put", "open", "drink", "cookie", "eat", "bear"]
 
-	# time steps in ms
-	timeSteps = (stepInterval..(stepInterval * 100)).step(stepInterval)
+	# trial onset time for each trial
+	trialSteps = ((trialRange.min * trialLength)..(trialRange.max * trialLength)).step(trialLength)
+
+	# create variable for trials
+	trialsColumn = createNewVariable("trial", "word")
 
 	# create variable for child holding objects
-	my_col = createNewVariable("holding","toy")
-	
-	# cycle through each time step and fill in cells with data
-	timeSteps.each do |time|
+	holdingColumn = createNewVariable("holding", "toy")
 
-		# make a new cell
-		col_cell = my_col.make_new_cell()
+	# trial iterator
+	currentTrial = -1
 
-		# pull a random toy
-		toy = toy_codes[rand(8)]
+	# start filling in trial column cells
+	trialSteps.each do | tstart |
 
-		# create a time interval for holding duration
-		on_off = tinterval(time, stepInterval)
+		# increase iterator
+		currentTrial = currentTrial + 1
 
-		# assign on/off codes based on time interval
-		col_cell.change_code("onset", on_off[0])
-		col_cell.change_code("offset", on_off[1])
+		# make new cell for trial column
+		trialCell = trialsColumn.make_new_cell()
 
-		# assign toy code to cell
-		col_cell.change_code("toy", toy)
+		# onset/offset adjustment
+		onset = tstart - trialLength
+		offset = tstart - 1
 
-		# print info
-		puts "toy: #{toy}; cell range: (#{on_off[0]}, #{on_off[1]})"
+		# update cell codes
+		trialCell.change_code("onset", onset)
+		trialCell.change_code("offset", offset)
+		trialCell.change_code("word", toyCodes[currentTrial])
+
+		# nested time intervals for holding col
+		randomHoldTime = rint(holdDuration-holdAdjust, holdDuration+holdAdjust)
+		timeSteps = (onset..offset).step(randomHoldTime).to_a
+
+		# start iterating through holding durations
+		timeSteps.each do | hstart |
+
+			# make a new cell
+			toyCell = holdingColumn.make_new_cell()
+
+			# pull a random toy
+			toy = toyCodes[rand(8)]
+
+			# make sure no overlap
+			hend =  [hstart + randomHoldTime, offset].min
+
+			# create a time interval for holding duration
+			holdSpan = tinterval(hstart, hend)
+
+			# assign on/off codes based on time interval
+			toyCell.change_code("onset", holdSpan[0])
+			toyCell.change_code("offset", holdSpan[1])
+
+			# assign toy code to cell
+			toyCell.change_code("toy", toy)
+
+		end
 
 	end
 
-	# set the column in datavyu
-	setColumn(my_col)
+	# set the columns in datavyu
+	setColumn(trialsColumn)
+	setColumn(holdingColumn)
 	
 end

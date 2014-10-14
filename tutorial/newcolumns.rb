@@ -18,5 +18,4 @@ begin
     eyegaze_container = createNewColumn("eyegaze", "trial", "direction")
     setColumn(eyegaze_container)
 
-
 end
