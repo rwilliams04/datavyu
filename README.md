@@ -1,11 +1,9 @@
-Scripts
+Cognitive Development Lab - Datavyu Material
 =======
-
-scripts to be used with the www.datavyu.org software
 
 ## general
 
-General purpose scripts to be used for any datavyu file.
+General scripts to be used with the www.datavyu.org software. These are designed not to be specific to any particular type of project.
 
 ### `datavyu2csv.rb`
 
@@ -16,3 +14,7 @@ Creates a `.csv` file that contains all the cells found for a particular column,
 3. Run the script `datavyu2csv.rb` through datavyu
 3. When prompted, select the folder containing the `.opf` files
 4. A new subfolder will be made that outputs a `.csv` file for each column and each `.opf` file found in your selected folder. 
+
+## tutorial
+
+Scripting tutorial for the lab catered towards beginners. The tutorial is not very detailed and focuses mostly on quickly making several columns with multiple `<codes>` and also some basics on extracting data from Datavyu using Ruby.
