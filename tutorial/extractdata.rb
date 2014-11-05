@@ -47,7 +47,8 @@ begin
         "holdOnset",
         "holdOffset",
         "word",
-        "toy"
+        "toy",
+        "holdDuration"
     ]
 
     # actually write the names you made to the file you started using the following function
