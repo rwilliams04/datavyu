@@ -112,7 +112,7 @@ r2datavyu <- function(rlist, filename) {
 }
 
 # import datavyu column to r when using the datavyu2csv script
-compile_dvcolumn <- function(folder, column) {
+compile_dvcolumn <- function(folder, column, ...) {
     filepaths <- list.files(folder, full.names=TRUE, pattern="\\.csv$")
     cols <- lapply(filepaths, function(x) {
         d <- read.csv(x, stringsAsFactors=FALSE)
@@ -122,7 +122,7 @@ compile_dvcolumn <- function(folder, column) {
     cols <- unlist(cols)
     #cols <- grepl(paste0(column, "__"), basename(filepaths))
     sublist <- filepaths[cols]
-    dat <- stackCSV(files=sublist, search=FALSE, stringsAsFactors=FALSE)
+    dat <- stackCSV(files=sublist, search=FALSE, ...)
     return(dat)
 }
 
