@@ -203,8 +203,10 @@ datavyu_col_search <- function(folder, unq=FALSE, cname="column") {
     return(unique(d$column))
   })
   cols <- unlist(cols)
+
   if (unq) {
     cols <- unique(cols)
   }
+
   return(cols)
 }
