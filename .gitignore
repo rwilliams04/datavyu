@@ -1,7 +1,3 @@
 # pandoc generated html files
 *.html
-**.DS_Store
-R/datavyur/*.Rproj.user
-R/datavyur/*.Rbuildignore
-R/datavyur/*.Rhistory
-R/datavyur/*.RData
+*.DS_Store
