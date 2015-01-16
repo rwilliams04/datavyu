@@ -15,6 +15,12 @@ Creates a `.csv` file that contains all the cells found for a particular column,
 3. When prompted, select the folder containing the `.opf` files
 4. A new subfolder will be made that outputs a `.csv` file for each column and each `.opf` file found in your selected folder.
 
+## `csv2opf.rb`
+
+This file takes a properly formatted `.csv` file that Datavyu understands and converts it into a `.opf` file that you can open within Datavyu.
+
+The script is to be run within Datavyu.
+
 # tutorial
 
 Scripting tutorial for the lab catered towards beginners. The tutorial is not very detailed and focuses mostly on quickly making several columns with multiple `<codes>` and also some basics on extracting data from Datavyu using Ruby.
