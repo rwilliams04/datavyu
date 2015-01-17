@@ -191,22 +191,33 @@ import_column <- function(folder, column, asList=FALSE, ... ) {
 #' 
 #' @param folder Character string of the name of the folder to be scanned.
 #' @param unq Return only unique column names
-#' @param cname Name of .csv column to check if exists. Defaults to \code{"column"}. 
+#' @param cname Name of .csv column to check if exists. Defaults to \code{"column"}.
 #' @examples
 #' datavyu_col_search("myfolder")
 #' @export
 datavyu_col_search <- function(folder, unq=FALSE, cname="column") {
   filepaths <- list.files(folder, full.names=TRUE, pattern="\\.csv$")
-  cols <- lapply(filepaths, function(x) {
+  cols <- do.call(rbind, lapply(filepaths, function(x) {
     d <- read.csv(x, stringsAsFactors=FALSE)
-    if (!any(names(d) == cname)) return(NA)
-    return(unique(d$column))
-  })
-  cols <- unlist(cols)
+    colExists <- any(names(d) == cname)
+    
+    if (!colExists) {
+      colName <- NA
+    } else {
+      colName <- unique(d$column)
+    }
+    
+    return(data.frame(colName, colExists))
+  }))
+  
+  dvcols <- data.frame(col=as.character(cols$colName[cols$colExists]), 
+                       file=as.character(filepaths[cols$colExists]),
+                       stringsAsFactors=FALSE)
 
   if (unq) {
-    cols <- unique(cols)
+    return(list(col=unique(dvcols$col), file=unique(dvcols$file)))
+  } else {
+    return(list(col=dvcols$col, file=dvcols$file))
   }
 
-  return(cols)
 }
