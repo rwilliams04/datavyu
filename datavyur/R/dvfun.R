@@ -2,7 +2,6 @@ message(
 "
 Functions to convert an R list to a datavyu csv file
 
-
 Note: At the moment there doesn't seem to be a way for datavyu to IMPORT .csv even though you can export to one. To get it back to .opf, use the csv2opf ruby script
 "
 )
