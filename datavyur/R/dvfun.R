@@ -162,7 +162,6 @@ r2datavyu <- function(rlist, filename="datavyur_export") {
 #' import_column("myfolder", "mycolumn")
 #' @export
 import_column <- function(folder, column, asList=FALSE, ... ) {
-  require(mejr)
   filepaths <- list.files(folder, full.names=TRUE, pattern="\\.csv$")
   cols <- lapply(filepaths, function(x) {
     d <- read.csv(x, stringsAsFactors=FALSE)
@@ -170,12 +169,13 @@ import_column <- function(folder, column, asList=FALSE, ... ) {
     return(all(d$column == column))
   })
   cols <- unlist(cols)
-  #cols <- grepl(paste0(column, "__"), basename(filepaths))
   sublist <- filepaths[cols]
-  
   dat <- lapply(sublist, function(x) read.csv(x, ...))
-
-  if (!asList) dat <- do.call(rbind, dat)
+  # dat <- lapply(sublist, function(x) read.csv(x))
+  
+  if (!asList) {
+    dat <- do.call(rbind, dat)
+  }
   
   return(dat)
 }
