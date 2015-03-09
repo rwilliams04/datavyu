@@ -53,14 +53,15 @@ begin
   # iterate through each .opf file
   opfFiles.each do |opfFile|
 
-    filebasename = opfFile[/.*(?=\..+$)/]
+    currentFilePath = File.join(rootFolder, opfFile)
+    filebasename = File.basename(opfFile)
     logText = "*Loading file: '#{filebasename}.opf'"
     puts logText
     logFile.write("\n\n#{'=' * 80}\n#{logText}")
 
     begin
       # load datavyu file
-      $db,$pj = load_db(File.join(Dir.pwd, opfFile))
+      $db,$pj = load_db(currentFilePath)
 
       # get list of column names
       columnList = getColumnList()
