@@ -16,7 +16,7 @@ begin
     else :unix
     end
     fc = Java::javax::swing::JFileChooser.new("JRuby panel")
-    fc.set_dialog_title("Select a folder containing .opf files")
+    fc.set_dialog_title("Select a folder containing .csv files")
     fc.set_file_selection_mode(Java::javax::swing::JFileChooser::DIRECTORIES_ONLY)
     if os == :mac
       fc.setCurrentDirectory(java.io.File.new(File.expand_path("~/Desktop")))
@@ -36,9 +36,9 @@ begin
   # get path of chosen folder
   rootFolder = pickFolder()
 
-  # change current directory to rootFolder then search for .opf files
+  # change current directory to rootFolder then search for .csv files
   Dir.chdir(rootFolder)
-  puts "\nTraversing through '#{rootFolder}' for .opf files..."
+  puts "\nTraversing through '#{rootFolder}' for .csv files..."
   csvFiles = Dir.glob("**/*.csv").sort
 
   # make output directory

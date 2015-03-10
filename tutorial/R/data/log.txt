@@ -1,0 +1,26 @@
+datavyu2csv initated at: Date: 03/10/2015 Time: 15:13
+
+Found the following files:
+
+example_data.opf
+
+================================================================================
+*Loading file: 'example_data.opf.opf'
+..Found column: childhands
+
+...Found arguments: hand, look
+
+....Writing cells to file: 'childhands__example_data.opf.csv'
+
+.....done with .csv file
+
+..Found column: parenthands
+
+...Found arguments: hand, look
+
+....Writing cells to file: 'parenthands__example_data.opf.csv'
+
+.....done with .csv file
+
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>

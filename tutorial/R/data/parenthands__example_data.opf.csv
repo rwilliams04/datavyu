@@ -1,0 +1,16 @@
+file,column,ordinal,onset,offset,hand,look
+example_data.opf,parenthands,1,565011,599274,both,1
+example_data.opf,parenthands,2,605754,605932,,0
+example_data.opf,parenthands,3,617136,807744,both,0
+example_data.opf,parenthands,4,1148755,1156107,,
+example_data.opf,parenthands,5,1175985,1618462,right,0
+example_data.opf,parenthands,6,1779524,2027523,,1
+example_data.opf,parenthands,7,2229937,2354549,right,1
+example_data.opf,parenthands,8,2397935,2521845,right,1
+example_data.opf,parenthands,9,2652787,2659419,left,0
+example_data.opf,parenthands,10,2712102,2746422,left,0
+example_data.opf,parenthands,11,2755844,2818662,right,
+example_data.opf,parenthands,12,3023273,3257375,right,
+example_data.opf,parenthands,13,3279902,3291380,right,0
+example_data.opf,parenthands,14,3364235,3539115,both,0
+example_data.opf,parenthands,15,3542151,3567860,,1
