@@ -3,5 +3,6 @@
 export(datavyu_col_search)
 export(datavyu_dat)
 export(import_column)
+export(merge_by_time)
 export(ms2time)
 export(r2datavyu)

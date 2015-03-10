@@ -1,5 +1,5 @@
 message(
-"
+  "
 Functions to convert an R list to a datavyu csv file
 
 Note: At the moment there doesn't seem to be a way for datavyu to IMPORT .csv even though you can export to one. To get it back to .opf, use the csv2opf ruby script
@@ -212,11 +212,84 @@ datavyu_col_search <- function(folder, unq=FALSE, cname="column") {
   dvcols <- data.frame(col=as.character(cols$colName[cols$colExists]), 
                        file=as.character(filepaths[cols$colExists]),
                        stringsAsFactors=FALSE)
-
+  
   if (unq) {
     return(list(col=unique(dvcols$col), file=unique(dvcols$file)))
   } else {
     return(list(col=dvcols$col, file=dvcols$file))
   }
-
+  
 }
+
+
+#' Merge by timestamp
+#' 
+#' Merges two data frames by onset/offset timestamps
+#' 
+#' If data is nested, then this will repeat rows from the higher level data. Both x and y must be data frames.
+#' 
+#' @param x top level data frame, (e.g., trial or block)
+#' @param y lower level data frame (e.g., eye gazes within trial)
+#' @param ids Suffixes to use to identify repeated column names
+#' @param keepall whether to keep all non-matching rows (true) or throw away non-matching (false).
+#' @param mergeby any additional common columns to merge by. Defaults to \code{file}.
+#' @examples
+#' # get data with some rows not nested
+#' x <- as.data.frame(datavyu_dat(n1=25, n2=2)[[1]])
+#' y <- datavyu_dat(n1=2, n2=100)[[2]]
+#' 
+#' z1 <- merge_by_time(x, y)
+#' z2 <- merge_by_time(x, y, ids=c(".higher", ".lower"), keepall=FALSE)
+#' @export
+merge_by_time <- function(x, y, ids=c(".1", ".2"), keepall=TRUE, mergeby=NULL) {
+
+  if (class(x)[1] != "data.frame" | class(y)[1] != "data.frame") {
+    stop(simpleError("x and y must both be of class data.frame"))
+  }
+  
+  mergeby <- unique(c("file", mergeby))
+  
+  file_c_exists <- c("file" %in% names(x), "file" %in% names(y))
+  created_file <- FALSE
+  if (all(file_c_exists)==FALSE) {
+    x$file <- "None"
+    y$file <- "None"
+    created_file <- TRUE
+  } else if (sum(file_c_exists) == 1) {
+    stop(simpleError("One data frame had column file but not the other"))
+  }
+  
+  mrgdat <- lapply(as.character(unique(x$file)), function(j) {
+    #print(j)
+    xj <- x[x$file == as.character(j), ]
+    yj <- y[y$file == as.character(j), ]
+    
+    if (nrow(xj) == 0 | nrow(yj) == 0) {
+      return(NULL)
+    }
+    
+    xj$temp_index_val_000xy <- 1:nrow(xj)
+    yj$temp_index_val_000xy <- NA
+    
+    for (i in 1:nrow(xj)) {
+      # i=1
+      onset_x <- as.numeric(xj[i, "onset"])
+      offset_x <- as.numeric(xj[i, "offset"])
+      y_rows <- as.numeric(yj[, "onset"]) >= onset_x & as.numeric(yj[, "offset"]) <= offset_x
+      
+      if (any(y_rows)) {
+        yj[y_rows, "temp_index_val_000xy"] <- i
+      }
+    }    
+    
+    z <- merge(xj, yj, by=c(mergeby, "temp_index_val_000xy"), suffixes=ids, all=keepall)
+    
+    return(z)
+  })
+  
+  mrgdat <- do.call(rbind, mrgdat)
+  mrgdat$temp_index_val_000xy <- NULL
+  if (created_file) mrgdat$file <- NULL
+  return(mrgdat)
+}
+
