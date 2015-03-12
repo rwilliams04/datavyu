@@ -3,6 +3,8 @@ require 'rbconfig'
 require 'pathname'
 
 begin
+  puts "Warning: The script will search through all subfolders"
+  
   # create a folder chooser function
   def pickFolder
     os = case Config::CONFIG['host_os']
@@ -11,7 +13,7 @@ begin
     else :unix
     end
     fc = Java::javax::swing::JFileChooser.new("JRuby panel")
-    fc.set_dialog_title("Select a folder containing .opf files")
+    fc.set_dialog_title("Select a root folder containing .opf files")
     fc.set_file_selection_mode(Java::javax::swing::JFileChooser::DIRECTORIES_ONLY)
     if os == :mac
       fc.setCurrentDirectory(java.io.File.new(File.expand_path("~/Desktop")))
