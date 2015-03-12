@@ -3,7 +3,7 @@
 data_path <- normalizePath("data")
 
 # Load the datavyur library to use the functions below
-# See tutorial
+# See tutorial on function usage
 library(datavyur)
 
 # Viewing Columns ---------------------------------------------------------

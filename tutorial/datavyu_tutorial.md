@@ -296,6 +296,13 @@ Next you need to load the `datavyur` library. Make sure it has already been inst
 library(datavyur)
 ```
 
+The `datavyur` package provides several utility functions to simplify the process. In the command window you can use the `?` operator to see the manual for each function. For example, to see the manual for the `import_column` function type the following in the command window:
+
+```{.r .numberLines}
+# see help documentation
+?import_column
+```
+
 ### Viewing Column Names
 
 The function `datavyu_col_search` will search through the path you've specified with `data_path` and find all Datavyu files that have been exported, along with their column names.
@@ -379,9 +386,11 @@ Datavyu prints timestamps in milliseconds. You can convert this to a more readab
 ```{.r .numberLines}
 # print milliseconds to time string
 ms2time(x$onset)
+```
 
 You can also save this conversion back into your R data if you like.
 
+```{.r .numberLines}
 # save time string back into data frame
 x$onset_str <- ms2time(x$onset)
 x$offset_str <- ms2time(x$offset)
