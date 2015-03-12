@@ -265,21 +265,23 @@ To use the `datavyur` R package you must first do the following steps. You can s
 
 ## Export Datavyu data using general export script
 
-Most of the functions in the R package `datavyur` depend on how the datavyu data has been exported. We'll use the script `datavyu2csv.rb` to export all our datavyu data into separate .csv files which will then be loaded into R.
+Most of the functions in the R package `datavyur` depend on how the Datavyu data (.opf files) has been exported. We'll use the script `datavyu2csv.rb` to export all of our `.opf` data into separate `.csv` files, which can then be loaded into R.
 
-The script you need can be found here: [https://github.com/iamamutt/datavyu/tree/master/general](https://github.com/iamamutt/datavyu/tree/master/general)
+The script you need to do this can be found here: [https://github.com/iamamutt/datavyu/tree/master/general](https://github.com/iamamutt/datavyu/tree/master/general)
 
-It's a good idea to go ahead and download the whole datavyu repository by clicking "Download ZIP" from here [https://github.com/iamamutt/datavyu](https://github.com/iamamutt/datavyu)
+It's a good idea to go ahead and download the whole github repository by clicking "Download ZIP" from here [https://github.com/iamamutt/datavyu](https://github.com/iamamutt/datavyu).
 
-Open up Datavyu, the run the script `datavyu2csv.rb`. You'll be asked to select the folder that contains all your .opf files. If you have them in separate folders, that's okay. It will search through subfolders if you tell it to start at a root folder. The script will create a folder called `datavyu_opf_output_DATE` within the root folder you selected. You should see a bunch of .csv files in this new folder along with a log.txt file showing what was exported and any errors found during export. This is the data you'll use with R.
+### Using `datavyu2csv.rb`
 
-Open up the file called `rcode.R` which is found in the `tutorial/R` folder. This will show you some examples on how to use the `datavyur` package you already installed.
+Open up Datavyu, then run the script `datavyu2csv.rb`. You'll be asked to select the folder that contains all of your `.opf` files. If you have them in separate folders, that's okay. It will search through subfolders if you tell it to start at some root folder. The script will create a new folder called `datavyu_opf_output_DATE` within the root folder you just selected. If successful, you should see multiple `.csv` files in this new folder along with a `log.txt` file showing what was exported and any errors found during export. This is the data you'll use with R (and can also be opened in a spreadsheet application).
 
 ## Using `datavyur`
 
-This section will outline how to use some of the functions found in the `datavyur` package. To follow along, make sure you know where your .csv files have been saved when you used the `datavyu2csv.rb` script in the previous step. If you don't have .csv files, you can use the ones in the `tutorial/R/data` folder.
+This section will outline how to use some of the functions found in the `datavyur` package.
+Open up the file called `rcode.R` which is found in the `tutorial/R` folder. This will show you some examples on how to use the `datavyur` package you've already installed.
+To follow along, make sure you know where your .`csv` files have been saved when you used the `datavyu2csv.rb` script in the previous step. If you don't have `.csv` files, you can use the ones in the `tutorial/R/data` folder to work with.
 
-To set the path of the data that was exported, do the following in RStudio:
+You have to first let R know where your data is at. To set the path of the data that was exported, do the following in RStudio:
 
 ```{.r .numberLines}
 # Find the full path to where the .csv files have been saved
@@ -294,9 +296,9 @@ Next you need to load the `datavyur` library. Make sure it has already been inst
 library(datavyur)
 ```
 
-### Viewing Columns
+### Viewing Column Names
 
-the function `datavyu_col_search` will search through the path you've specified with `data_path` and find all datavyu files that have been exported along with their column names.
+The function `datavyu_col_search` will search through the path you've specified with `data_path` and find all Datavyu files that have been exported, along with their column names.
 
 To view the names for each file:
 
@@ -312,9 +314,9 @@ datavyu_col_search(data_path, unq=TRUE)$col
 
 ### Importing Columns
 
-The ruby script `datavyu2csv.rb` exports a .csv file for each column within each file. To combine them back together in R you'll use the function `import_column`. You'll need to know the path to your data again and the names of the columns you're trying to import (using the `datavyu_col_search` if you don't already know this).
+The ruby script `datavyu2csv.rb` exports a `.csv` file for each column within each file. To combine them back together in R you'll use the function `import_column`. You'll need to know the path to your data again and the names of the columns you're trying to import (using the `datavyu_col_search`, if you don't already know this).
 
-The code below will search the example .csv and look for columns with a specific name, them load them into R.
+The code below will search the example `.csv` and look for columns with a specific name, them load them into R.
 
 ```{.r .numberLines}
 # load columns as separate data frames
@@ -324,17 +326,17 @@ parent_hands <- import_column(data_path, "parenthands")
 
 ### Merging Nested Columns
 
-If you have columns that are originally nested within each other, you can get it back to this format by using the function `merge_by_time`. The example below will attempt to merge two data frames by timestamps (even though these aren't really nested data).
+If you have columns that are originally nested within each other, you can get it back to this format by using the function `merge_by_time`. The example below will attempt to merge two data frames by timestamps (even though these data aren't really nested).
 
-Since these data aren't really nested, you'll get a lot of rows that won't merge. But you can still include them if you want.
+Since these data aren't really nested, you'll get a lot of rows that won't merge. But you can still include them if you want. This is the default behavior of the function.
 
 ```{.r .numberLines}
 z1 <- merge_by_time(child_hands, parent_hands)
 ```
 
-The data `z1` above merges two data frames by column and includes any rows that couldn't be merged. If you see `NA` for any rows correspond to `column.1`, this means that timestamps were found for the lower level data but not for the higher level. This should not happen if you're data are truly nested. `NA` for `column.2` means that higher level timestamps exist, but no lower level data. This is okay since sometimes no observations exists for some higher level row.
+The data `z1` above merges two data frames by column and includes any rows that couldn't be merged. If you see `NA` for any rows corresponding to `column.1` (the higher level), this means that timestamps were found for the lower level data but not for the higher level. This should not happen if you're data are truly nested. Fix any errors in your original `.opf` file if this is the case. An `NA` for `column.2` means that higher level timestamps exist, but no lower level data. This is okay since sometimes no observations exists for some higher level row.
 
-To merge without all the `NA` values, do the following: I'm also specifying different suffixes besides `.1` and `.2`, and setting the argument `keepall=FALSE`.
+To merge without all the `NA` values, do the following. I'm also specifying different suffixes besides `.1` and `.2`, and setting the argument `keepall=FALSE` to remove all `NA`s.
 
 ```{.r .numberLines}
 z2 <- merge_by_time(child_hands, parent_hands, ids=c(".higher", ".lower"), keepall=FALSE)
@@ -342,20 +344,20 @@ z2 <- merge_by_time(child_hands, parent_hands, ids=c(".higher", ".lower"), keepa
 
 ### R Data to Datavyu
 
-If you have R data that you want to convert back into something the Datavyu program can recognize you do so with the function `r2datavyu`. You just need to make sure you have the columns `ordinal`, `onset`, and `offset` in your data. You can pass all data frames you want to convert as a single list object.
+If you have R data that you want to convert back into something that the Datavyu program can recognize, you can do so with the function `r2datavyu`. You just need to make sure you have the columns `ordinal`, `onset`, and `offset` in your R data. You can pass all data frames you want to convert as a single `list` object.
 
 ```{.r .numberLines}
 # provide a list of data to convert
 r2datavyu(list(child_hands,parent_hands), "myexport")
 ```
 
-The function above will save the file as a weirdly formatted .csv file, but this is something that can be used in Datavyu but not right away. Since the Datavyu program doesn't allow you to directly import .csv files using the GUI, you need to use a script. Luckily I have provided one for you in the `general` folder from github.
+The function above will save the file as a weirdly formatted `.csv` file, but this is something that can be used in Datavyu, but not right away. Since the Datavyu program doesn't allow you to directly import these types of `.csv` files using the GUI, you need to use a script. Luckily I have provided one for you in the `general` folder from the github repository.
 
-In datavyu, run the script called `csv2opf.rb`. This will convert all .csv files (properly formmated by using the function `r2datavyu`) in a folder to .opf files, which can then be opened in Datavyu directly.
+In Datavyu, run the script called `csv2opf.rb`. This will convert all `.csv` files (properly formmated by using the function `r2datavyu`) in a folder to `.opf` files, which can now be opened in Datavyu directly.
 
 ### R Data to Spreadsheet
 
-Save any R data frame to a spreadsheet that can be opened in Excel.
+Save any R data frame to a spreadsheet that can be opened in Excel. You don't need the `datavyur` packages for this, and comes with standard R. You can do this for any R data frame.
 
 ```{.r .numberLines}
 write.csv(z2, file="merged_data.csv", row.names=FALSE, na="")
@@ -363,7 +365,7 @@ write.csv(z2, file="merged_data.csv", row.names=FALSE, na="")
 
 ### Fake Data Example
 
-The `datavyur` package provides a function to create fake data called `datavyu_dat`. Below I'm just creating two separate datasets using this function.
+The `datavyur` package provides a function to create fake data called `datavyu_dat`. Below I'm just creating two separate datasets using this function. This is handy for seeing how your data should be formatted if you want to save an R data back into Datavyu data.
 
 ```{.r .numberLines}
 x <- as.data.frame(datavyu_dat(n1=25, n2=2)[[1]])
@@ -372,9 +374,13 @@ y <- datavyu_dat(n1=2, n2=100)[[2]]
 
 ### Time Conversion
 
+Datavyu prints timestamps in milliseconds. You can convert this to a more readable format by using the function `ms2time`.
+
 ```{.r .numberLines}
 # print milliseconds to time string
 ms2time(x$onset)
+
+You can also save this conversion back into your R data if you like.
 
 # save time string back into data frame
 x$onset_str <- ms2time(x$onset)
