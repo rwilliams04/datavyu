@@ -1,10 +1,4 @@
-message(
-  "
-Functions to convert an R list to a datavyu csv file
-
-Note: At the moment there doesn't seem to be a way for datavyu to IMPORT .csv even though you can export to one. To get it back to .opf, use the csv2opf ruby script
-"
-)
+# Datavyu Functions --------------------------------------------------------------
 
 #' Fake Datavyu data
 #' 
@@ -222,26 +216,26 @@ datavyu_col_search <- function(folder, unq=FALSE, cname="column") {
 }
 
 
-#' Merge by timestamp
+#' Merge nested data
 #' 
 #' Merges two data frames by onset/offset timestamps
 #' 
-#' If data is nested, then this will repeat rows from the higher level data. Both x and y must be data frames.
+#' Since data is nested, this will repeat rows from the higher level data. Both x and y must be data frames.
 #' 
 #' @param x top level data frame, (e.g., trial or block)
 #' @param y lower level data frame (e.g., eye gazes within trial)
 #' @param ids Suffixes to use to identify repeated column names
 #' @param keepall whether to keep all non-matching rows (true) or throw away non-matching (false).
-#' @param mergeby any additional common columns to merge by. Defaults to \code{file}.
+#' @param mergeby any additional common columns to merge by. Defaults to merging only by \code{file}.
 #' @examples
 #' # get data with some rows not nested
 #' x <- as.data.frame(datavyu_dat(n1=25, n2=2)[[1]])
 #' y <- datavyu_dat(n1=2, n2=100)[[2]]
 #' 
-#' z1 <- merge_by_time(x, y)
-#' z2 <- merge_by_time(x, y, ids=c(".higher", ".lower"), keepall=FALSE)
+#' z1 <- merge_nested(x, y)
+#' z2 <- merge_nested(x, y, ids=c(".higher", ".lower"), keepall=FALSE)
 #' @export
-merge_by_time <- function(x, y, ids=c(".1", ".2"), keepall=TRUE, mergeby=NULL) {
+merge_nested <- function(x, y, ids=c(".1", ".2"), keepall=TRUE, mergeby=NULL) {
 
   if (class(x)[1] != "data.frame" | class(y)[1] != "data.frame") {
     stop(simpleError("x and y must both be of class data.frame"))
