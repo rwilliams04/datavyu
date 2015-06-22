@@ -333,12 +333,12 @@ parent_hands <- import_column(data_path, "parenthands")
 
 ### Merging Nested Columns
 
-If you have columns that are originally nested within each other, you can get it back to this format by using the function `merge_by_time`. The example below will attempt to merge two data frames by timestamps (even though these data aren't really nested).
+If you have columns that are originally nested within each other, you can get it back to this format by using the function `merge_nested`. The example below will attempt to merge two data frames by timestamps (even though these data aren't really nested).
 
 Since these data aren't really nested, you'll get a lot of rows that won't merge. But you can still include them if you want. This is the default behavior of the function.
 
 ```{.r .numberLines}
-z1 <- merge_by_time(child_hands, parent_hands)
+z1 <- merge_nested(child_hands, parent_hands)
 ```
 
 The data `z1` above merges two data frames by column and includes any rows that couldn't be merged. If you see `NA` for any rows corresponding to `column.1` (the higher level), this means that timestamps were found for the lower level data but not for the higher level. This should not happen if you're data are truly nested. Fix any errors in your original `.opf` file if this is the case. An `NA` for `column.2` means that higher level timestamps exist, but no lower level data. This is okay since sometimes no observations exists for some higher level row.
@@ -346,7 +346,7 @@ The data `z1` above merges two data frames by column and includes any rows that 
 To merge without all the `NA` values, do the following. I'm also specifying different suffixes besides `.1` and `.2`, and setting the argument `keepall=FALSE` to remove all `NA`s.
 
 ```{.r .numberLines}
-z2 <- merge_by_time(child_hands, parent_hands, ids=c(".higher", ".lower"), keepall=FALSE)
+z2 <- merge_nested(child_hands, parent_hands, ids=c(".higher", ".lower"), keepall=FALSE)
 ```
 
 ### R Data to Datavyu

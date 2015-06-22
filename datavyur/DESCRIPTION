@@ -1,11 +1,9 @@
 Package: datavyur
 Type: Package
 Title: Functions to handle Datavyu data
-Version: 0.1.1
-Date: 2015-01-16
+Version: 0.2.1
+Date: 2015-06-21
 Authors@R: person("Joseph", "Burling", email = "josephburling@gmail.com", role = c("aut", "cre"))
-Description: The package is to be used along with the genearl Ruby script for 
-             exporting data and getting the data into R. The package also takes 
-             R data and saves it in a format for importing into Datavyu.
+Description: A set of functions to handle import/export between R and Datavyu
 License: MIT
 Roxygen: list(wrap = FALSE)
