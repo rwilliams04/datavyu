@@ -4,12 +4,13 @@
 \alias{import_column}
 \title{Import Datavyu column to R}
 \usage{
-import_column(folder, column, asList = FALSE, ...)
+import_column(column, folder = getOption("datavyur.folder"), asList = FALSE,
+  ...)
 }
 \arguments{
-\item{folder}{Character string of the name of the folder to be scanned.}
-
 \item{column}{The name of the column to import as used in the Datavyu file}
+
+\item{folder}{Character string of the name of the folder to be scanned. Defaults to option \code{datavur.folder}.}
 
 \item{asList}{Logical value indicating to return a list or data frame}
 

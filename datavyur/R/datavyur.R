@@ -8,7 +8,7 @@
 #' \code{\link{datavyu_col_search}} \cr
 #' \code{\link{datavyu_dat}} \cr
 #' \code{\link{import_column}} \cr
-#' \code{\link{merge_by_time}} \cr
+#' \code{\link{merge_nested}} \cr
 #' \code{\link{ms2time}} \cr
 #' \code{\link{r2datavyu}} \cr
 #' 
@@ -32,7 +32,7 @@ NULL
   
   op <- options()
   dv.ops <- list(
-    datavyur.null = NULL
+    datavyur.folder = "data"
   )
   toset <- !(names(dv.ops) %in% names(op))
   if(any(toset)) options(dv.ops[toset])

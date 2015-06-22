@@ -13,7 +13,7 @@ A set of functions to handle import/export between R and Datavyu
 \code{\link{datavyu_col_search}} \cr
 \code{\link{datavyu_dat}} \cr
 \code{\link{import_column}} \cr
-\code{\link{merge_by_time}} \cr
+\code{\link{merge_nested}} \cr
 \code{\link{ms2time}} \cr
 \code{\link{r2datavyu}} \cr
 }

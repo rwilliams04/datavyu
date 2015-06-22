@@ -281,13 +281,22 @@ This section will outline how to use some of the functions found in the `datavyu
 Open up the file called `rcode.R` which is found in the `tutorial/R` folder. This will show you some examples on how to use the `datavyur` package you've already installed.
 To follow along, make sure you know where your .`csv` files have been saved when you used the `datavyu2csv.rb` script in the previous step. If you don't have `.csv` files, you can use the ones in the `tutorial/R/data` folder to work with.
 
-You have to first let R know where your data is at. To set the path of the data that was exported, do the following in RStudio:
+You have to first let R know where your data is at. To set the path of the data that was exported, override the default option `datavyur.folder` by doing do the following in RStudio:
+
+```{.r .numberLines}
+# Replace the string path/to/data with the location to where your data is located, relative to working directory.
+options("datavyur.folder"="path/to/data")
+```
+
+An alternative to setting an R option is to just create an object that holds the path string, like so:
 
 ```{.r .numberLines}
 # Find the full path to where the .csv files have been saved
 # Replace "data" with the found path
 data_path <- normalizePath("data")
 ```
+
+You can then use this path as an argument for functions like `import_column` or `datavyu_col_search`.
 
 Next you need to load the `datavyur` library. Make sure it has already been installed before loading.
 
@@ -310,6 +319,10 @@ The function `datavyu_col_search` will search through the path you've specified 
 To view the names for each file:
 
 ```{.r .numberLines}
+# if datavyur.folder has been set
+datavyu_col_search()
+
+# otherwise
 datavyu_col_search(data_path)
 ```
 

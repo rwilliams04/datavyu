@@ -4,10 +4,11 @@
 \alias{datavyu_col_search}
 \title{Scan .csv files for data}
 \usage{
-datavyu_col_search(folder, unq = FALSE, cname = "column")
+datavyu_col_search(folder = getOption("datavyur.folder"), unq = FALSE,
+  cname = "column")
 }
 \arguments{
-\item{folder}{Character string of the name of the folder to be scanned.}
+\item{folder}{Character string of the name of the folder to be scanned. Defaults to option \code{datavur.folder}.}
 
 \item{unq}{Return only unique column names}
 

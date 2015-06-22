@@ -1,5 +1,9 @@
 # Datavyu Functions --------------------------------------------------------------
 
+.dv_test <- function(){
+  options("datavyur.folder"="../tutorial/R/data")
+}
+
 #' Fake Datavyu data
 #' 
 #' This function will create fake data in the R format needed to import into Datavyu
@@ -148,14 +152,15 @@ r2datavyu <- function(rlist, filename="datavyur_export") {
 #' Note: If the same column name was used but has different number of arguments then you will get an error unless \code{asList=TRUE}.
 #' This function assumes that the .csv is structured in a way based on how the \code{datavyu2csv.rb} script exports data.
 #' 
-#' @param folder Character string of the name of the folder to be scanned.
 #' @param column The name of the column to import as used in the Datavyu file
+#' @param folder Character string of the name of the folder to be scanned. Defaults to option \code{datavur.folder}.
 #' @param asList Logical value indicating to return a list or data frame
 #' @param ... Additional options passed to the read.csv function
 #' @examples
 #' import_column("myfolder", "mycolumn")
 #' @export
-import_column <- function(folder, column, asList=FALSE, ... ) {
+import_column <- function(column, folder=getOption("datavyur.folder"), asList=FALSE, ... ) {
+  
   filepaths <- list.files(folder, full.names=TRUE, pattern="\\.csv$")
   cols <- lapply(filepaths, function(x) {
     d <- read.csv(x, stringsAsFactors=FALSE)
@@ -182,13 +187,14 @@ import_column <- function(folder, column, asList=FALSE, ... ) {
 #' The function will read all csv files found in the folder and check if they have the column name as indicated in the \code{cname} argument.
 #' If the column name is found, it will return the name of the actual column name used within Datavyu.
 #' 
-#' @param folder Character string of the name of the folder to be scanned.
+#' @param folder Character string of the name of the folder to be scanned. Defaults to option \code{datavur.folder}.
 #' @param unq Return only unique column names
 #' @param cname Name of .csv column to check if exists. Defaults to \code{"column"}.
 #' @examples
 #' datavyu_col_search("myfolder")
 #' @export
-datavyu_col_search <- function(folder, unq=FALSE, cname="column") {
+datavyu_col_search <- function(folder=getOption("datavyur.folder"), unq=FALSE, cname="column") {
+  
   filepaths <- list.files(folder, full.names=TRUE, pattern="\\.csv$")
   cols <- do.call(rbind, lapply(filepaths, function(x) {
     d <- read.csv(x, stringsAsFactors=FALSE)
@@ -285,5 +291,21 @@ merge_nested <- function(x, y, ids=c(".1", ".2"), keepall=TRUE, mergeby=NULL) {
   mrgdat$temp_index_val_000xy <- NULL
   if (created_file) mrgdat$file <- NULL
   return(mrgdat)
+}
+
+#' Temporally align data
+#' 
+#' Soon
+#' 
+#' Soon
+#' 
+#' @param dlist Character vector  to import or list of data frames to merge
+#' @param folder Defaults to option
+#' @examples
+#' soon
+#' @export
+temporal_align <- function(dlist, folder=NULL) {
+  
+  if (length(cols) < 2) stop("Must provide at least two column names")
 }
 
