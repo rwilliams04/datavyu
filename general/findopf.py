@@ -10,8 +10,12 @@ Save this file to the desktop (otherwise cd to folder with this file).
 Open up a terminal (in utilities folder inside your applications).
 Type the two lines below in the terminal:
 
+mkdir ~/Desktop/dump
 cd ~/Desktop
 python findopf.py
+
+After you run the python script you'll select the folder which contains the
+.opf files, then select a folder to copy them over (dump).
 
 Note: Must have Tk installed with your python distribution.
 """
@@ -21,29 +25,36 @@ from tkFileDialog import askdirectory
 import os
 import shutil
 
-opfDir = "~/Desktop"
+def getFilePaths():
+    look_dir = os.path.abspath(os.path.expanduser("~/Desktop"))
+    root = Tk()
+    root.withdraw()
+    print("Choose starting folder to find .opf files")
+    search_path = askdirectory(
+        title='Choose starting folder to find .opf files',
+        initialdir=look_dir,
+        parent=root)
+    print("Choose folder to copy over found .opf files")
+    copy_path = askdirectory(
+        title='Choose folder to copy over found .opf files',
+        initialdir=look_dir,
+        parent=root)
+    root.destroy()
+    return search_path, copy_path
 
-Tk().withdraw()
+if __name__ == '__main__':
+    search_path_ret, copy_path_ret = getFilePaths()
+    os.chdir(search_path_ret)
+    print("Changing to directory:")
+    print(os.getcwd())
 
-opfPath = os.path.abspath(os.path.expanduser(opfDir))
+    for root, dirs, files in os.walk('.'):
+        for filestr in files:
+            if filestr.endswith(".opf"):
+                fileJoin = os.path.join(root, filestr)
+                shutil.copy(fileJoin, copy_path_ret)
+                print(''.join(["copying over: ", filestr]))
 
-foldername = askdirectory(
-    title='Choose starting folder to find .opf files',
-    initialdir=opfPath)
+    print("Done")
 
-newfolder = askdirectory(
-    title='Choose folder to copy over found .opf files',
-    initialdir=opfPath)
-
-os.chdir(foldername)
-print(os.getcwd())
-
-for root, dirs, files in os.walk('.'):
-    for filestr in files:
-        if filestr.endswith(".opf"):
-            fileJoin = os.path.join(root, filestr)
-            shutil.copy(fileJoin, newfolder)
-            print(''.join(["copying over: ", filestr]))
-
-print("Done")
 
