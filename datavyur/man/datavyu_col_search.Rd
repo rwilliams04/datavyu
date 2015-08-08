@@ -5,21 +5,27 @@
 \title{Scan .csv files for data}
 \usage{
 datavyu_col_search(folder = getOption("datavyur.folder"), unq = FALSE,
-  cname = "column")
+  cnames = c("file", "column", "args", "classes", "local"))
 }
 \arguments{
-\item{folder}{Character string of the name of the folder to be scanned. Defaults to option \code{datavur.folder}.}
+\item{folder}{Character string of the name of the folder to be scanned. Defaults to option \code{datavyur.folder}.}
 
 \item{unq}{Return only unique column names}
 
-\item{cname}{Name of .csv column to check if exists. Defaults to \code{"column"}.}
+\item{cnames}{Name of columns to return if \code{unq=TRUE}.}
+}
+\value{
+data.frame with .csv info. The variable \code{file} is the original .opf file name used.
+\code{column} is the name of the column within the .opf file. \code{args} are the argument names used.
+\code{classes} are the guessed classes for each argument based on R import functions.
+\code{local} is the .csv file name and location for a particular column and .opf file.
 }
 \description{
-Scans data exported as .csv from Datavyu and returns a list of column names
+Scans data exported as .csv from Datavyu and returns a list of .opf column names among other attributes
 }
 \details{
-The function will read all csv files found in the folder and check if they have the column name as indicated in the \code{cname} argument.
-If the column name is found, it will return the name of the actual column name used within Datavyu.
+The function will read all .csv files found in \code{folder}.
+All valid .opfs will be found based on if they have the columns \code{file, column, onset, offset, ordinal}.
 }
 \examples{
 datavyu_col_search("myfolder")

@@ -2,19 +2,19 @@
 % Please edit documentation in R/dvfun.R
 \name{import_column}
 \alias{import_column}
-\title{Import Datavyu column to R}
+\title{Import Datavyu column into R}
 \usage{
 import_column(column, folder = getOption("datavyur.folder"), asList = FALSE,
   ...)
 }
 \arguments{
-\item{column}{The name of the column to import as used in the Datavyu file}
+\item{column}{The name of the column to import as used in the Datavyu .opf file}
 
-\item{folder}{Character string of the name of the folder to be scanned. Defaults to option \code{datavur.folder}.}
+\item{folder}{Character string corresponding to the folder path to be scanned. Defaults to option \code{datavyur.folder}.}
 
 \item{asList}{Logical value indicating to return a list or data frame}
 
-\item{...}{Additional options passed to the read.csv function}
+\item{...}{Additional options passed to the function \link{\code{data.table::fread}}}
 }
 \description{
 Imports a Datavyu column to R when using the datavyu2csv.rb script

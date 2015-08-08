@@ -11,11 +11,15 @@ datavyu_dat(n1 = 10, n2 = 15)
 
 \item{n2}{Sample size for variable 2}
 }
+\value{
+List of datavyu formated data
+}
 \description{
-This function will create fake data in the R format needed to import into Datavyu
+This function will create fake data in the R format needed to import back into the Datavyu software
 }
 \details{
-The function shows how you can have either a list of columns or an actual data frame. Either way will work.
+The function shows how you can have either a list of columns or an actual data frame.
+Either way will work.
 }
 \examples{
 my_data <- datavyu_dat()

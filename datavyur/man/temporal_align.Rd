@@ -2,22 +2,51 @@
 % Please edit documentation in R/dvfun.R
 \name{temporal_align}
 \alias{temporal_align}
-\title{Temporally align data}
+\title{Temporally align data by frame}
 \usage{
-temporal_align(dlist, folder = NULL)
+temporal_align(all.opf = TRUE, all.cols = TRUE,
+  folder = getOption("datavyur.folder"), fps = 30, colClasses)
 }
 \arguments{
-\item{dlist}{Character vector  to import or list of data frames to merge}
+\item{all.opf}{Use all found .opf files from \code{folder} or specify .opf file names to use. Must
+be a character vector with exact file name matches as seen inside one of the exported .csv files.}
 
-\item{folder}{Defaults to option}
+\item{all.cols}{Use all columns found in \code{folder} or only use specified column names entered
+as a character vector.}
+
+\item{folder}{Defaults to option \code{datavyur.folder}.}
+
+\item{fps}{Common framerate to use for alignment. Defaults to 30 frames per second video.}
+
+\item{colClasses}{List of new classes to override guessed classes when reading in .csv data. see \link{\code{data.table::fread}}}
+}
+\value{
+data.frame with aligned data. This will be very large!
 }
 \description{
-Soon
+This will align several Datavyu columns by common frame number
 }
 \details{
-Soon
+You have the option to set the framerate using \code{fps}. The lower the frame rate, the less likely
+two events will line up in time. This is because the timestamps are converted to frame numbers based on chunking into bins.
+The larger the fps, the larger the bins, and more likely two events will line up in time.
+\cr
+Note: Sometimes R doesn't get the right class of the imported column argument.
+This can happen if you have weird characters in your data. Use \code{colClasses} to override this.
 }
 \examples{
-soon
+# set folder path if needed, otherwise use default path with example data.
+# options(datavyur.folder="mydatafolder")
+
+# example data with no arguments
+ex_data_aligned <- temporal_align()
+
+# example data selecting only one of the columns
+ex_data_aligned2 <- temporal_align(all.cols="childhands")
+
+# example data using additional arguments
+newClasses <- list(integer=c("childhands.look", "parenthands.look"),
+                   character=c("childhands.hand", "parenthands.hand"))
+ex_data_aligned3 <- temporal_align(fps=10, colClasses=newClasses)
 }
 
