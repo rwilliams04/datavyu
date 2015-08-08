@@ -56,7 +56,7 @@ begin
   opfFiles.each do |opfFile|
 
     currentFilePath = File.join(rootFolder, opfFile)
-    filebasename = File.basename(opfFile)
+    filebasename = File.basename(opfFile, File.extname(opfFile))
     logText = "*Loading file: '#{filebasename}.opf'"
     puts logText
     logFile.write("\n\n#{'=' * 80}\n#{logText}")
