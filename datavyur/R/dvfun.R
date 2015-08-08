@@ -133,14 +133,14 @@ r2datavyu <- function(rlist, filename="datavyur_export") {
 #' 
 #' This function only works if you had previously used the \code{datavyu2csv.rb} script to export a Datavyu file to .csv
 #' This can be obtained from \url{http://github.com/iamamutt/datavyu/general}.
-#' 
+#' \cr
 #' Note: If the same column name was used but has different number of arguments then you will get an error unless \code{asList=TRUE}.
 #' This function assumes that the .csv is structured in a way based on how the \code{datavyu2csv.rb} script exports data.
 #' 
 #' @param column The name of the column to import as used in the Datavyu .opf file
 #' @param folder Character string corresponding to the folder path to be scanned. Defaults to option \code{datavyur.folder}.
 #' @param asList Logical value indicating to return a list or data frame
-#' @param ... Additional options passed to the function \link{\code{data.table::fread}}
+#' @param ... Additional options passed to the function \code{data.table::fread}
 #' @examples
 #' import_column("myfolder", "mycolumn")
 #' @export
@@ -286,7 +286,6 @@ merge_nested <- function(x, y, ids=c(".1", ".2"), keepall=TRUE, mergeby=NULL) {
 #' You have the option to set the framerate using \code{fps}. The lower the frame rate, the less likely
 #' two events will line up in time. This is because the timestamps are converted to frame numbers based on chunking into bins.
 #' The larger the fps, the larger the bins, and more likely two events will line up in time.
-#' \cr
 #' Note: Sometimes R doesn't get the right class of the imported column argument. 
 #' This can happen if you have weird characters in your data. Use \code{colClasses} to override this.
 #' 
@@ -295,9 +294,10 @@ merge_nested <- function(x, y, ids=c(".1", ".2"), keepall=TRUE, mergeby=NULL) {
 #' @param all.cols Use all columns found in \code{folder} or only use specified column names entered
 #' as a character vector. 
 #' @param fps Common framerate to use for alignment. Defaults to 30 frames per second video.
-#' @param colClasses List of new classes to override guessed classes when reading in .csv data. see \link{\code{data.table::fread}}
+#' @param colClasses List of new classes to override guessed classes when reading in .csv data. see \code{data.table::fread}
 #' @param folder Defaults to option \code{datavyur.folder}.
 #' @return data.frame with aligned data. This will be very large!
+#' @export
 #' @examples
 #' # set folder path if needed, otherwise use default path with example data.
 #' # options(datavyur.folder="mydatafolder")

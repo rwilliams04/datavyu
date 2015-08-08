@@ -12,6 +12,7 @@
 #' \code{\link{ms2time}} \cr
 #' \code{\link{multi_merge}} \cr
 #' \code{\link{r2datavyu}} \cr
+#' \code{\link{temporal_align}} \cr
 #' \code{\link{ts2frame}} \cr
 #' @import data.table
 #' @docType package
