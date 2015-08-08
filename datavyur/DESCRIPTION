@@ -1,9 +1,10 @@
 Package: datavyur
 Type: Package
 Title: Functions to handle Datavyu data
-Version: 0.2.1
-Date: 2015-06-21
+Version: 0.3.1
+Date: 2015-08-08
 Authors@R: person("Joseph", "Burling", email = "josephburling@gmail.com", role = c("aut", "cre"))
 Description: A set of functions to handle import/export between R and Datavyu
 License: MIT
+Imports: data.table
 Roxygen: list(wrap = FALSE)
