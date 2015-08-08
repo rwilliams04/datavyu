@@ -1,16 +1,16 @@
-datavyu2csv initated at: Date: 03/10/2015 Time: 15:13
+datavyu2csv initated at: Date: 08/08/2015 Time: 12:51
 
 Found the following files:
 
-example_data.opf
+datavyur_export.opf
 
 ================================================================================
-*Loading file: 'example_data.opf.opf'
+*Loading file: 'datavyur_export.opf'
 ..Found column: childhands
 
 ...Found arguments: hand, look
 
-....Writing cells to file: 'childhands__example_data.opf.csv'
+....Writing cells to file: 'childhands__datavyur_export.csv'
 
 .....done with .csv file
 
@@ -18,7 +18,7 @@ example_data.opf
 
 ...Found arguments: hand, look
 
-....Writing cells to file: 'parenthands__example_data.opf.csv'
+....Writing cells to file: 'parenthands__datavyur_export.csv'
 
 .....done with .csv file
 
