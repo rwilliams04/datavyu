@@ -443,3 +443,140 @@ temporal_align <- function(all.opf=TRUE,
     message("Merge successful!")
     return(as.data.frame(opf_merged))
 }
+
+
+#' Ordinal alignment
+#' 
+#' Align and merge data by cell number (ordinal)
+#'
+#' See \code{\link{temporal_align}} for more details on function usage. 
+#' 
+#' @param all.opf All .opf files (\code{TRUE}) or a character vector of specific .opf files to use
+#' @param all.cols All columns from a .opf file or character vector of specific column names
+#' @param folder Search folder, defaults to \code{datavyur.folder} option
+#' @param colClasses Override column classes.
+#'
+#' @return A data.frame with merged data aligned by cell number (ordinal value)
+#' @export
+#' @seealso \code{\link{temporal_align}}
+#' @examples
+#' ordinal_align()
+ordinal_align <- function(all.opf=TRUE, 
+                           all.cols=TRUE, 
+                           folder=getOption("datavyur.folder"),
+                           colClasses)
+{
+    # get list of opf files, columns, args, locations
+    message("Searching through .csv files for valid .opf data...")
+    fdat <- opf_and_col_selector(all.opf = all.opf, all.cols = all.cols, folder = folder)
+    
+    # classes for each argument
+    est_classes <- unique(fdat[, c("column", "args", "classes"), with=FALSE])
+    addonoff <- unique(data.table::as.data.table(expand.grid(
+        column=est_classes[, unique(column)], args=c("onset", "offset"), stringsAsFactors=FALSE)))
+    addonoff$classes <- "integer"
+    est_classes <- rbind(est_classes, addonoff)
+    est_classes[, both := paste0(column, ".", args)]
+    
+    # overwrite classes if specified
+    if (!missing(colClasses)) {
+        class_names <- names(colClasses)
+        for (i in 1:length(colClasses)) {
+            est_classes[both %in% colClasses[[i]], classes := class_names[i]]
+        }
+    }
+    
+    message("Reading in all located data...")
+    opf_list <- lapply(unique(fdat$file), function(f) {
+        # DEBUG: f <- fdat$file[1]
+        
+        # columns find in current file
+        col_names <- fdat[file==f, unique(column)]
+        
+        # cycle through each column and import data
+        to_merge <- lapply(col_names, function(cn) {
+            # DEBUG: cn <- fdat[file==f, unique(column)][1]
+            
+            # path to column .csv for specific .opf file
+            fpath <- fdat[file==f & column==cn, unique(local)]
+            
+            # import .csv
+            # suppress warnings about class conversions
+            DT <- suppressWarnings(
+                data.table::fread(fpath, 
+                                  stringsAsFactors=FALSE, 
+                                  verbose=FALSE, 
+                                  showProgress=FALSE, 
+                                  colClasses = c(file="character",
+                                                 column="character",
+                                                 onset="integer",
+                                                 offset="integer",
+                                                 ordinal="integer")))
+
+            # add columns if missing
+            # overwrite classes from estimated classes
+            arg_names <- est_classes[column==cn, sort(unique(args))]
+            current_cols <- est_classes[args %in% arg_names, ]
+            need_add <- arg_names[!arg_names %in% names(DT)]
+            for (i in arg_names) {
+                if (i %in% need_add) {
+                    DT[[i]] <- NA
+                } 
+                suppressWarnings(class(DT[[i]]) <- current_cols[args==i, unique(classes)])
+            }
+            
+            # remove unecessary columns
+            DT[, column := NULL]
+            
+            # add column prefix to argument names
+            new_suffixes <- names(DT)[!names(DT) %in% c("file", "ordinal")]
+            data.table::setnames(DT, new_suffixes, paste0(cn, ".", new_suffixes))
+            
+            return(data.table::copy(DT))
+        })
+        
+        # begin file merge
+        if (length(to_merge) > 1) {
+            merged <- multi_merge(to_merge, 
+                                  by = c("file", "ordinal"), 
+                                  all = TRUE, 
+                                  allow.cartesian=TRUE)
+        } else {
+            merged <- to_merge[[1]]
+        }
+        
+        # if need to add whole columns not found
+        need_add <- est_classes[!both %in% names(merged), both]
+        for (i in need_add) {
+            merged[[i]] <- NA
+            suppressWarnings(class(merged[[i]]) <- est_classes[both == i, classes])
+        }
+        
+        # set key for larger merge later
+        data.table::setkey(merged)
+        return(merged)
+    })
+    
+    message("Merging all files...")
+    # names of columns for all list items
+    all_names <- sort(unique(unlist(lapply(opf_list, function(i) names(i)))))
+    
+    # begin merging all files into one large dataset
+    opf_merged <- multi_merge(opf_list, by=all_names, all=TRUE)
+    
+    # some cleanup
+    opf_merged <- opf_merged[order(file, ordinal), ]
+    data.table::setkey(opf_merged)
+    opf_merged <- unique(opf_merged)
+    
+    rowNAs <- apply(opf_merged[, !names(opf_merged) %in% c("file", "ordinal"), 
+                               with=FALSE],
+                    1, function(i) {
+                        all(is.na(i))  
+                    })
+    
+    opf_merged <- opf_merged[rowNAs==FALSE, ]
+    
+    message("Merge successful!")
+    return(as.data.frame(opf_merged))
+}
