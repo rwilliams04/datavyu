@@ -17,6 +17,7 @@ A set of functions to handle import/export between R and Datavyu
 \code{\link{ms2time}} \cr
 \code{\link{multi_merge}} \cr
 \code{\link{r2datavyu}} \cr
+\code{\link{temporal_align}} \cr
 \code{\link{ts2frame}} \cr
 }
 

@@ -18,7 +18,7 @@ as a character vector.}
 
 \item{fps}{Common framerate to use for alignment. Defaults to 30 frames per second video.}
 
-\item{colClasses}{List of new classes to override guessed classes when reading in .csv data. see \link{\code{data.table::fread}}}
+\item{colClasses}{List of new classes to override guessed classes when reading in .csv data. see \code{data.table::fread}}
 }
 \value{
 data.frame with aligned data. This will be very large!
@@ -30,7 +30,6 @@ This will align several Datavyu columns by common frame number
 You have the option to set the framerate using \code{fps}. The lower the frame rate, the less likely
 two events will line up in time. This is because the timestamps are converted to frame numbers based on chunking into bins.
 The larger the fps, the larger the bins, and more likely two events will line up in time.
-\cr
 Note: Sometimes R doesn't get the right class of the imported column argument.
 This can happen if you have weird characters in your data. Use \code{colClasses} to override this.
 }

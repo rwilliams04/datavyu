@@ -14,7 +14,7 @@ import_column(column, folder = getOption("datavyur.folder"), asList = FALSE,
 
 \item{asList}{Logical value indicating to return a list or data frame}
 
-\item{...}{Additional options passed to the function \link{\code{data.table::fread}}}
+\item{...}{Additional options passed to the function \code{data.table::fread}}
 }
 \description{
 Imports a Datavyu column to R when using the datavyu2csv.rb script
@@ -22,7 +22,7 @@ Imports a Datavyu column to R when using the datavyu2csv.rb script
 \details{
 This function only works if you had previously used the \code{datavyu2csv.rb} script to export a Datavyu file to .csv
 This can be obtained from \url{http://github.com/iamamutt/datavyu/general}.
-
+\cr
 Note: If the same column name was used but has different number of arguments then you will get an error unless \code{asList=TRUE}.
 This function assumes that the .csv is structured in a way based on how the \code{datavyu2csv.rb} script exports data.
 }
