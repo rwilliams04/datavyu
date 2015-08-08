@@ -10,8 +10,10 @@
 #' \code{\link{import_column}} \cr
 #' \code{\link{merge_nested}} \cr
 #' \code{\link{ms2time}} \cr
+#' \code{\link{multi_merge}} \cr
 #' \code{\link{r2datavyu}} \cr
-#' 
+#' \code{\link{ts2frame}} \cr
+#' @import data.table
 #' @docType package
 #' @name datavyur
 NULL
@@ -22,17 +24,14 @@ NULL
 {
   
   startupText <- paste0(
-    "Functions to convert an R list to a datavyu csv file\n",
-    "Note: At the moment there doesn't seem to be a way for datavyu to IMPORT", 
-    " .csv even though you can export to one. To get it back to .opf, use", 
-    " the csv2opf ruby script."
+    "\nFunctions to convert an R list to a datavyu csv file\n"
   )
   
   message(startupText)
   
   op <- options()
   dv.ops <- list(
-    datavyur.folder = "data"
+    datavyur.folder = system.file("extdata", package="datavyur")
   )
   toset <- !(names(dv.ops) %in% names(op))
   if(any(toset)) options(dv.ops[toset])
