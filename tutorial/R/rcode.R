@@ -1,10 +1,14 @@
+# Load the datavyur library to use the functions below
+# See tutorial on function usage
+library(datavyur)
+
 # Find the full path to where the .csv files have been saved
 # Replace "data" with the found path
 data_path <- normalizePath("data")
 
-# Load the datavyur library to use the functions below
-# See tutorial on function usage
-library(datavyur)
+# Set the package option datavyur.folder
+options(datavyur.folder=data_path)
+
 
 # Viewing Columns ---------------------------------------------------------
 
@@ -12,24 +16,24 @@ library(datavyur)
 datavyu_col_search(data_path)
 
 # view names only
-datavyu_col_search(data_path, unq=TRUE)$col
+datavyu_col_search(unq=TRUE, cnames="column")
 
 
 # Importing Columns -------------------------------------------------------
 
 # load columns as separate data frames
-child_hands <- import_column(data_path, "childhands")
-parent_hands <- import_column(data_path, "parenthands")
+child_hands <- import_column("childhands") # or import_column("childhands", data_path)
+parent_hands <- import_column("parenthands")
 
 # Merging Nested Columns --------------------------------------------------
 
-z1 <- merge_by_time(child_hands, parent_hands)
-z2 <- merge_by_time(child_hands, parent_hands, ids=c(".higher", ".lower"), keepall=FALSE)
+z1 <- merge_nested(child_hands, parent_hands)
+z2 <- merge_nested(child_hands, parent_hands, ids=c(".higher", ".lower"), keepall=FALSE)
 
 # R data to datavyu -------------------------------------------------------
 
 # provide a list of data to convert
-r2datavyu(list(child_hands,parent_hands), "myexport")
+r2datavyu(list(chands=child_hands, phands=parent_hands), "myexport")
 
 # R to spreadsheet --------------------------------------------------------
 

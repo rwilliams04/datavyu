@@ -1,6 +1,6 @@
 % Datavyu Scripting
 % Joseph Burling
-% March 10th, 2015
+% August 8th, 2015
 
 --------------------
 
@@ -257,7 +257,7 @@ Look here for a list of examples of the types of methods (functions) you can use
 
 # R and datavyur
 
-To use the `datavyur` R package you must first do the following steps. You can skip these if everything has already been installed.
+To use the `datavyur` R package you must first do the following steps to install this package. You can skip these if everything has already been installed.
 
 1. Install R: [http://www.r-project.org/](http://www.r-project.org/)
 2. Install RStudio: [http://www.rstudio.com/products/rstudio/download/](http://www.rstudio.com/products/rstudio/download/)
@@ -265,7 +265,7 @@ To use the `datavyur` R package you must first do the following steps. You can s
 
 ## Export Datavyu data using general export script
 
-Most of the functions in the R package `datavyur` depend on how the Datavyu data (.opf files) has been exported. We'll use the script `datavyu2csv.rb` to export all of our `.opf` data into separate `.csv` files, which can then be loaded into R.
+Most of the functions in the R package `datavyur` depend on how the Datavyu data (.opf files) have been exported. We'll use the script `datavyu2csv.rb` to export all of our `.opf` data into separate `.csv` files, which can then be loaded into R. This will search through all subfolders and find any `.opf` files, open each one, and for each column, export a `.csv` with the argument data for each column.
 
 The script you need to do this can be found here: [https://github.com/iamamutt/datavyu/tree/master/general](https://github.com/iamamutt/datavyu/tree/master/general)
 
@@ -277,15 +277,22 @@ Open up Datavyu, then run the script `datavyu2csv.rb`. You'll be asked to select
 
 ## Using `datavyur`
 
-This section will outline how to use some of the functions found in the `datavyur` package.
+This section will briefly outline how to use some of the functions found in the `datavyur` package.
 Open up the file called `rcode.R` which is found in the `tutorial/R` folder. This will show you some examples on how to use the `datavyur` package you've already installed.
 To follow along, make sure you know where your .`csv` files have been saved when you used the `datavyu2csv.rb` script in the previous step. If you don't have `.csv` files, you can use the ones in the `tutorial/R/data` folder to work with.
 
-You have to first let R know where your data is at. To set the path of the data that was exported, override the default option `datavyur.folder` by doing do the following in RStudio:
+First, you need to load the `datavyur` library. Make sure it has already been installed before loading.
+
+```{.r .numberLines}
+# Load the datavyur library to use the functions below
+library(datavyur)
+```
+
+You have to then let R know where your data is at. To set the path of the data that was exported, override the default option `datavyur.folder` by doing do the following in RStudio:
 
 ```{.r .numberLines}
 # Replace the string path/to/data with the location to where your data is located, relative to working directory.
-options("datavyur.folder"="path/to/data")
+options(datavyur.folder="path/to/data")
 ```
 
 An alternative to setting an R option is to just create an object that holds the path string, like so:
@@ -296,14 +303,7 @@ An alternative to setting an R option is to just create an object that holds the
 data_path <- normalizePath("data")
 ```
 
-You can then use this path as an argument for functions like `import_column` or `datavyu_col_search`.
-
-Next you need to load the `datavyur` library. Make sure it has already been installed before loading.
-
-```{.r .numberLines}
-# Load the datavyur library to use the functions below
-library(datavyur)
-```
+You can then use this path as an argument for some of the functions, like `import_column` or `datavyu_col_search`.
 
 The `datavyur` package provides several utility functions to simplify the process. In the command window you can use the `?` operator to see the manual for each function. For example, to see the manual for the `import_column` function type the following in the command window:
 
@@ -312,9 +312,16 @@ The `datavyur` package provides several utility functions to simplify the proces
 ?import_column
 ```
 
+Type in the search below to see a list of functions available in the `datavyur` package.
+
+```{.r .numberLines}
+# see help documentation
+?datavyur
+```
+
 ### Viewing Column Names
 
-The function `datavyu_col_search` will search through the path you've specified with `data_path` and find all Datavyu files that have been exported, along with their column names.
+The function `datavyu_col_search` will search through the path you've specified with `data_path` and find all Datavyu files that have been already exported to `.csv` files, along with their column names and other attributes.
 
 To view the names for each file:
 
@@ -329,19 +336,19 @@ datavyu_col_search(data_path)
 To view only the column names from each file:
 
 ```{.r .numberLines}
-datavyu_col_search(data_path, unq=TRUE)$col
+datavyu_col_search(unq=TRUE, cnames="column")
 ```
 
 ### Importing Columns
 
 The ruby script `datavyu2csv.rb` exports a `.csv` file for each column within each file. To combine them back together in R you'll use the function `import_column`. You'll need to know the path to your data again and the names of the columns you're trying to import (using the `datavyu_col_search`, if you don't already know this).
 
-The code below will search the example `.csv` and look for columns with a specific name, them load them into R.
+The code below will search the example `.csv` and look for columns with a specific name, them load them into R. This is assuming the folder path has already been set above in the options. If not, set the `folder` argument from this function to a path pointing to the data folder.
 
 ```{.r .numberLines}
 # load columns as separate data frames
-child_hands <- import_column(data_path, "childhands")
-parent_hands <- import_column(data_path, "parenthands")
+child_hands <- import_column("childhands") # or import_column("childhands", data_path)
+parent_hands <- import_column("parenthands")
 ```
 
 ### Merging Nested Columns
@@ -364,11 +371,11 @@ z2 <- merge_nested(child_hands, parent_hands, ids=c(".higher", ".lower"), keepal
 
 ### R Data to Datavyu
 
-If you have R data that you want to convert back into something that the Datavyu program can recognize, you can do so with the function `r2datavyu`. You just need to make sure you have the columns `ordinal`, `onset`, and `offset` in your R data. You can pass all data frames you want to convert as a single `list` object.
+If you have R data that you want to convert back into something that the Datavyu program can recognize, you can do so with the function `r2datavyu`. You just need to make sure you have the columns `ordinal`, `onset`, and `offset` in your R data. You can pass all data frames you want to convert as a single `list` object. Each object in the list must be named (list items must have names)! Or the conversion to `.opf` will not work.
 
 ```{.r .numberLines}
 # provide a list of data to convert
-r2datavyu(list(child_hands,parent_hands), "myexport")
+r2datavyu(list(chands=child_hands, phands=parent_hands), "myexport")
 ```
 
 The function above will save the file as a weirdly formatted `.csv` file, but this is something that can be used in Datavyu, but not right away. Since the Datavyu program doesn't allow you to directly import these types of `.csv` files using the GUI, you need to use a script. Luckily I have provided one for you in the `general` folder from the github repository.
@@ -408,8 +415,4 @@ You can also save this conversion back into your R data if you like.
 x$onset_str <- ms2time(x$onset)
 x$offset_str <- ms2time(x$offset)
 ```
-
-
-
-
 
