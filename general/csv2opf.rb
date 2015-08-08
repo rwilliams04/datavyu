@@ -51,7 +51,7 @@ begin
   csvFiles.each do |csvFile|
 
     fullFile = File.join(Dir.pwd, csvFile)
-    $db, proj = load_db(fullFile)
+    $db, $pj = load_db(fullFile)
 
     opfName = File.join(Dir.pwd, outputDir, File.basename(csvFile)[/.*(?=\..+$)/] + ".opf")
     save_db(opfName)
