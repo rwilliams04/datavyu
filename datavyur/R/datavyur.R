@@ -5,6 +5,8 @@
 #' A set of functions to handle import/export between R and Datavyu
 #' 
 #' @section Exported functions:
+#' \code{\link{check_codes}} \cr
+#' \code{\link{check_timestamps}} \cr
 #' \code{\link{datavyu_col_search}} \cr
 #' \code{\link{datavyu_dat}} \cr
 #' \code{\link{import_column}} \cr
