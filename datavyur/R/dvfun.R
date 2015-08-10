@@ -356,6 +356,9 @@ temporal_align <- function(all.opf=TRUE,
     
     # classes for each argument
     est_classes <- unique(fdat[, c("column", "args", "classes"), with=FALSE])
+    add_ord <- expand.grid(column=c(unique(est_classes$column)), args="ordinal", stringsAsFactors = FALSE)
+    add_ord$classes <- "integer"
+    est_classes <- merge(est_classes, add_ord, by=c("column", "args", "classes"), all=TRUE)
     est_classes[, both := paste0(column, ".", args)]
     
     # overwrite classes if specified
@@ -391,8 +394,9 @@ temporal_align <- function(all.opf=TRUE,
                                                  column="character",
                                                  onset="integer",
                                                  offset="integer",
-                                                 ordinal="integer"),
-                                  ...))
+                                                 ordinal="integer")
+                                  #...
+                                  ))
             
             # convert timestamps to frame counts
             DT[, `:=`(onset=ts2frame(onset, fps=fps, warn=FALSE), 
@@ -417,12 +421,12 @@ temporal_align <- function(all.opf=TRUE,
                 if (i %in% need_add) {
                     DT[[i]] <- NA
                 } 
-                suppressWarnings(class(DT[[i]]) <- current_cols[args==i, classes])
+                suppressWarnings(class(DT[[i]]) <- current_cols[column==cn & args==i, unique(classes)])
             }
             
             # remove unecessary columns
             DT[, column := NULL]
-            DT[, ordinal := NULL]
+            #DT[, ordinal := NULL]
             
             # add column prefix to argument names
             new_suffixes <- names(DT)[!names(DT) %in% c("file", "frame_number")]
@@ -454,6 +458,24 @@ temporal_align <- function(all.opf=TRUE,
     })
     
     message("Merging all files...")
+    
+    necessary_names <- est_classes$both
+    necessary_classes <- est_classes$classes
+    
+    lapply(opf_list, function(i) {
+        lnames <- names(i)
+        need_idx <- !necessary_names %in% lnames
+        if (any(need_idx)) {
+            new_names <- necessary_names[need_idx]
+            new_cls <- necessary_classes[need_idx]
+            for (j in 1:length(new_names)) {
+                i[[new_names[j]]] <- NA
+                class(i[[new_names[j]]]) <- new_cls[j]
+            }
+        }
+        return(invisible())
+    })
+    
     # names of columns for all list items
     all_names <- sort(unique(unlist(lapply(opf_list, function(i) names(i)))))
     
@@ -472,6 +494,9 @@ temporal_align <- function(all.opf=TRUE,
                     })
     
     opf_merged <- opf_merged[rowNAs==FALSE, ]
+    
+    new_order <- c(c("file", "frame_number"), sort(all_names[!all_names %in% c("file", "frame_number")]))
+    data.table::setcolorder(opf_merged, new_order)
     
     message("Merge successful!")
     return(as.data.frame(opf_merged))
@@ -612,6 +637,9 @@ ordinal_align <- function(all.opf=TRUE,
     
     opf_merged <- opf_merged[rowNAs==FALSE, ]
     
+    new_order <- c(c("file", "ordinal"), sort(all_names[!all_names %in% c("file", "ordinal")]))
+    data.table::setcolorder(opf_merged, new_order)
+
     message("Merge successful!")
     return(as.data.frame(opf_merged))
 }
