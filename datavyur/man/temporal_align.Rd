@@ -5,7 +5,7 @@
 \title{Temporally align data by frame}
 \usage{
 temporal_align(all.opf = TRUE, all.cols = TRUE,
-  folder = getOption("datavyur.folder"), fps = 30, colClasses)
+  folder = getOption("datavyur.folder"), fps = 30, colClasses, ...)
 }
 \arguments{
 \item{all.opf}{Use all found .opf files from \code{folder} or specify .opf file names to use. Must
@@ -19,6 +19,9 @@ as a character vector.}
 \item{fps}{Common framerate to use for alignment. Defaults to 30 frames per second video.}
 
 \item{colClasses}{List of new classes to override guessed classes when reading in .csv data. see \code{data.table::fread}}
+
+\item{...}{Additional arguments passed to \code{data.table::fread},
+except \code{stringsAsFactors, colClasses, verbose, showProgress}}
 }
 \value{
 data.frame with aligned data. This will be very large!

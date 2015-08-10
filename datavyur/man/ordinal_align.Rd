@@ -5,7 +5,7 @@
 \title{Ordinal alignment}
 \usage{
 ordinal_align(all.opf = TRUE, all.cols = TRUE,
-  folder = getOption("datavyur.folder"), colClasses)
+  folder = getOption("datavyur.folder"), colClasses, ...)
 }
 \arguments{
 \item{all.opf}{All .opf files (\code{TRUE}) or a character vector of specific .opf files to use}
@@ -15,6 +15,9 @@ ordinal_align(all.opf = TRUE, all.cols = TRUE,
 \item{folder}{Search folder, defaults to \code{datavyur.folder} option}
 
 \item{colClasses}{Override column classes.}
+
+\item{...}{Additional arguments passed to \code{data.table::fread},
+except \code{stringsAsFactors, colClasses, verbose, showProgress}}
 }
 \value{
 A data.frame with merged data aligned by cell number (ordinal value)
