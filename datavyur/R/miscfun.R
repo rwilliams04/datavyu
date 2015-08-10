@@ -114,7 +114,7 @@ check_opf_data <- function(folder=getOption("datavyur.folder"))
             c_type <- unique(DT$column)
             dat <- data.table::data.table(
                 args=args_in_col,
-                classes = sapply(DT[, args_in_col, with=FALSE], class),
+                classes = sapply(DT[, args_in_col, with=FALSE], typeof),
                 file=d_file,
                 column=c_type,
                 local=x
