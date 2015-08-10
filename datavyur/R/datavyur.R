@@ -26,7 +26,8 @@ NULL
 {
   
   startupText <- paste0(
-    "\nFunctions to convert an R list to a datavyu csv file\n"
+    "\nSee tutorial for a brief introduction on how to use this package:\n",
+    "https://github.com/iamamutt/datavyu/blob/master/tutorial/datavyu_tutorial.md"
   )
   
   message(startupText)
