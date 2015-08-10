@@ -47,20 +47,23 @@ datavyu_dat <- function(n1=10, n2=15) {
 
 #' R data to Datavyu .csv file
 #' 
-#' Exports R data as a list or dataframe to a .csv file used by Datavyu for importing.
+#' Process to transfer R data to Datavyu
 #' 
-#' Each list item is a different column in the final datavyu file.
+#' Exports R data (as a list of lists or dataframes corresponding to Datavyu columns) to a .csv file. 
+#' This can then be used by Datavyu for saving as .opf and importing R data Datvyu. 
+#' Each list item is a different column in the final Datavyu file.
+#' NOTE: Datavyu cannot currently import the .csv files this function creates.
+#' To get the .csv file back into Datavyu, use the \code{csv2opf.rb} file found here: 
+#' \url{http://github.com/iamamutt/datavyu/general}.
 #' 
-#' Note: Datavyu cannot currently import .csv files. To get the .csv file back into Datavyu
-#' use the \code{csv2opf.rb} file found here: \url{http://github.com/iamamutt/datavyu/general}.
-#' 
-#' @param rlist List of columns to be used in the final Datavyu file.
-#' @param filename Filename of the .csv file to be used
+#' @param rlist List of lists or data.frames. These are the columns to be used in the final Datavyu file.
+#' @param filename Filename of the .csv file to be created. Leave off extension. May specify path as prefix.
 #' @examples
 #' # First get example data to use
 #' example_data <- datavyu_dat()
 #' 
-#' # See how the example data is structured
+#' # See how the example data is structured, as a list with another list and data.frame
+#' # Both the list and data.frame are named. If not named, one will be assigned.
 #' str(example_data)
 #' 
 #' # Export R list to a .csv file for importing into Datavyu
@@ -68,13 +71,13 @@ datavyu_dat <- function(n1=10, n2=15) {
 #' @export
 r2datavyu <- function(rlist, filename="datavyur_export") {
     
-    warnTest <- paste0(
+    warnText <- paste0(
         "\nNote: At the moment there doesn't seem to be a way for datavyu to import", 
         " a .csv even though you can export to one. To get it back to .opf, use", 
         " the csv2opf.rb ruby script in the general folder.\n"
     )
     
-    warning(simpleWarning(warnTest))
+    warning(simpleWarning(warnText))
     
     na2val <- function(x, v="") ifelse(is.na(x), v, x)
     
@@ -84,7 +87,18 @@ r2datavyu <- function(rlist, filename="datavyur_export") {
     col_names <- names(rlist)
     
     if (n_col < 1) stop(simpleError("no columns found in r list object"))
-    if (any(col_names == "")) stop(simpleError("not all list items have column names"))
+    
+    # check for named rlist, add new names if necessary
+    if (is.null(col_names)) {
+        new_names <- paste0("datavyur", 1:n_col)
+        names(rlist) <- new_names
+    } else {
+        no_names <- col_names == ""
+        if (any(no_names)) {
+            new_names <- paste0("datavyur", 1:n_col)[no_names]
+            names(rlist)[no_names] <- new_names
+        }
+    }
     
     # go through each column structured as an r list
     each_col <- lapply(1:n_col, function(col) {
@@ -94,18 +108,34 @@ r2datavyu <- function(rlist, filename="datavyur_export") {
         col_name <- col_names[col]
         code_names <- names(codes)
         
-        common_codes_l <- code_names %in% c("ordinal", "onset", "offset")
+        if (is.null(code_names)) {
+            stop(simpleError(
+                paste0("ordinal, onset, offset not found for: ", col_name)
+            ))
+        }
         
-        if (sum(common_codes_l) != 3) stop(simpleError("ordinal, onset, offset not found"))
-        if (length(codes) < 4) stop(simpleError("no custom arguments found"))
+        # check of codes have these common arguments
+        common_code_names <- c("ordinal", "onset", "offset")
+        common_codes_l <- common_code_names %in% code_names
+        custom_code_names <- code_names[!code_names %in% common_code_names]
         
-        custom_code_names <- code_names[!common_codes_l]
-        code_str <- paste0(custom_code_names, "|NOMINAL", collapse=",")
-        col_str <- paste0(col_name, " (MATRIX,true,)-", code_str)
+        if (!all(common_codes_l)) {
+            stop(simpleError(
+                paste0("ordinal, onset, offset not found for: ", col_name)
+            ))
+        }
         
         ts_ord <- codes$ordinal
         ts_on <- ms2time(codes$onset)[ts_ord]
         ts_off <- ms2time(codes$offset)[ts_ord]
+        
+        if (length(custom_code_names) == 0) {
+            codes$code1 <- rep(NA, length(ts_ord))
+            custom_code_names <- "code1"
+        }
+        
+        code_str <- paste0(custom_code_names, "|NOMINAL", collapse=",")
+        col_str <- paste0(col_name, " (MATRIX,true,)-", code_str)
         
         code_mat <- lapply(custom_code_names, function(cn) {
             na2val(as.character(codes[[cn]])[ts_ord])
