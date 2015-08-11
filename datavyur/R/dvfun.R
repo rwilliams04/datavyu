@@ -1,6 +1,8 @@
 # Datavyu Functions --------------------------------------------------------------
 
-
+## TODO:
+# temporal_align should include original timestamps
+# ordinal_align should include all columns found in all.cols
 
 #' Fake Datavyu data
 #' 
@@ -352,13 +354,19 @@ temporal_align <- function(all.opf=TRUE,
 {
     # get list of opf files, columns, args, locations
     message("Searching through .csv files for valid .opf data...")
-    fdat <- opf_and_col_selector(all.opf = all.opf, all.cols = all.cols, folder = folder)
+    fdat <- opf_and_col_selector(all.opf = all.opf, 
+                                 all.cols = all.cols, 
+                                 folder = folder)
     
-    # classes for each argument
+    # classes for each argument, add ordinal
     est_classes <- unique(fdat[, c("column", "args", "classes"), with=FALSE])
-    add_ord <- expand.grid(column=c(unique(est_classes$column)), args="ordinal", stringsAsFactors = FALSE)
+    add_ord <- expand.grid(
+        column=c(unique(est_classes$column)), 
+        args="ordinal", 
+        stringsAsFactors = FALSE)
     add_ord$classes <- "integer"
-    est_classes <- merge(est_classes, add_ord, by=c("column", "args", "classes"), all=TRUE)
+    est_classes <- merge(est_classes, add_ord, 
+                         by=c("column", "args", "classes"), all=TRUE)
     est_classes[, both := paste0(column, ".", args)]
     
     # overwrite classes if specified
@@ -373,7 +381,7 @@ temporal_align <- function(all.opf=TRUE,
     opf_list <- lapply(unique(fdat$file), function(f) {
         # DEBUG: f <- fdat$file[1]
         
-        # columns find in current file
+        # columns to find in current file
         col_names <- fdat[file==f, unique(column)]
         
         # cycle through each column and import data
@@ -394,9 +402,8 @@ temporal_align <- function(all.opf=TRUE,
                                                  column="character",
                                                  onset="integer",
                                                  offset="integer",
-                                                 ordinal="integer")
-                                  #...
-                                  ))
+                                                 ordinal="integer"), ...
+                ))
             
             # convert timestamps to frame counts
             DT[, `:=`(onset=ts2frame(onset, fps=fps, warn=FALSE), 
@@ -414,8 +421,8 @@ temporal_align <- function(all.opf=TRUE,
             
             # add columns if missing
             # overwrite classes from estimated classes
-            arg_names <- est_classes[column==cn, sort(unique(args))]
-            current_cols <- est_classes[args %in% arg_names, ]
+            arg_names <- est_classes[column == cn, sort(unique(args))]
+            current_cols <- est_classes[args %in% arg_names,]
             need_add <- arg_names[!arg_names %in% names(DT)]
             for (i in arg_names) {
                 if (i %in% need_add) {
@@ -495,7 +502,8 @@ temporal_align <- function(all.opf=TRUE,
     
     opf_merged <- opf_merged[rowNAs==FALSE, ]
     
-    new_order <- c(c("file", "frame_number"), sort(all_names[!all_names %in% c("file", "frame_number")]))
+    new_order <- c(c("file", "frame_number"), 
+                   sort(all_names[!all_names %in% c("file", "frame_number")]))
     data.table::setcolorder(opf_merged, new_order)
     
     message("Merge successful!")
@@ -639,7 +647,7 @@ ordinal_align <- function(all.opf=TRUE,
     
     new_order <- c(c("file", "ordinal"), sort(all_names[!all_names %in% c("file", "ordinal")]))
     data.table::setcolorder(opf_merged, new_order)
-
+    
     message("Merge successful!")
     return(as.data.frame(opf_merged))
 }
