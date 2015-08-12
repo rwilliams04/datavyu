@@ -27,7 +27,7 @@ Scripting tutorial for the lab catered towards beginners. The tutorial is not ve
 
 # datavyur
 
-This is an R package to help with getting data from Datavyu and into R and back into Datavyu again.
+This is an R package to help with getting data from Datavyu and into R and back into Datavyu again. It also provides useful functions to manage Datavyu data in R.
 
 ## How to install
 
@@ -37,25 +37,25 @@ If you're on Windows, you might need to install rtools first before you can use 
 
 ###Step 1.
 
-First, open RStudio and then install the package `devtools` from CRAN. This is so you can get the package from the internet (GitHub) and build it. After that, load the library. Here are the steps for this in the R console:
+First, open RStudio and then install the package `devtools` from CRAN. This is so you can get the package from the internet (GitHub) and build it.
 
 ```r
 install.packages("devtools")
-library(devtools)
 ```
 
 ###Step 2.
 
-Use the `install_github` function from the package you just installed and loaded. This will download the package from the `datavyur` github repository and build it on your computer. Run this code:
+Once the `devtools` package is installed, you'll use the `install_github` function from the package to download and install this `datavyur` package from this GitHub repository. Run this code to install:
 
 ```r
-install_github("iamamutt/datavyu/datavyur")
+devtools::install_github("iamamutt/datavyu/datavyur")
 ```
 
 ###Step 3.
 
-The package is now installed. Load the package as you normally would any other package. Repeat steps 2--3 if there are updates to the package or to reinstall on another computer. You should now see it in your packages tab within RStudio.
+The package is now installed. Load the package as you normally would any other package (see below). Repeat steps 2--3 if there are updates to the `datavyur` package or to install it on another computer. You should now see it in your packages tab within RStudio (after clicking refresh).
 
 ```r
 library(datavyur)
 ```
+
