@@ -45,10 +45,10 @@ install.packages("devtools")
 
 ###Step 2.
 
-Once the `devtools` package is installed, you'll use the `install_github` function from the package to download and install this `datavyur` package from this GitHub repository. Run this code to install:
+Once the `devtools` package is installed, you'll use the `install_github` function from the package to download and install this `datavyur` package from this GitHub repository. Copy the code below and paste it into the console to install the package with all other required packages:
 
 ```r
-devtools::install_github("iamamutt/datavyu/datavyur")
+devtools::install_github("iamamutt/datavyu/datavyur", build_vignettes = TRUE, dependencies = TRUE)
 ```
 
 ###Step 3.
