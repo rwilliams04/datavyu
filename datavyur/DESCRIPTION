@@ -8,3 +8,5 @@ Description: A set of functions to handle import/export between R and Datavyu
 License: MIT
 Imports: data.table
 Roxygen: list(wrap = FALSE)
+Suggests: knitr
+VignetteBuilder: knitr
