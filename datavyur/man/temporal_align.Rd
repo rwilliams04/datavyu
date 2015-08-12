@@ -5,7 +5,8 @@
 \title{Temporally align data by frame}
 \usage{
 temporal_align(all.opf = TRUE, all.cols = TRUE,
-  folder = getOption("datavyur.folder"), fps = 30, colClasses, ...)
+  folder = getOption("datavyur.folder"), fps = 30, keep.frames = TRUE,
+  colClasses, ...)
 }
 \arguments{
 \item{all.opf}{Use all found .opf files from \code{folder} or specify .opf file names to use. Must
@@ -17,6 +18,11 @@ as a character vector.}
 \item{folder}{Defaults to option \code{datavyur.folder}.}
 
 \item{fps}{Common framerate to use for alignment. Defaults to 30 frames per second video.}
+
+\item{keep.frames}{Keep the frame_number column, which will result in a much larger dataset.
+If \code{keep.frames=FALSE}, then all you know is which two events overlap, not knowing for how long.
+If \code{keep.frames=TRUE} (default), you can calculate the number of frames that overlap between two events, and if fps is know,
+you can convert this total to milliseconds.}
 
 \item{colClasses}{List of new classes to override guessed classes when reading in .csv data. see \code{data.table::fread}}
 
