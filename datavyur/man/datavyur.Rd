@@ -4,9 +4,17 @@
 \name{datavyur}
 \alias{datavyur}
 \alias{datavyur-package}
-\title{datavyur: An R Package for dealing with Datavyu files}
+\title{datavyur: An R Package for managing exported Datavyu files}
 \description{
-A set of functions to handle import/export between R and Datavyu
+A set of R functions to easily manage coded data exported
+from the Datavyu software
+}
+\details{
+To see the documentation on how to use this package, run the following
+code in the console:
+\cr\cr \code{vignette("tutorial", package="datavyur")}. \cr\cr
+This will pull up the R vignette "tutorial" and demonstrate
+how to use the set of exported functions below.
 }
 \section{Exported functions}{
 
@@ -22,5 +30,7 @@ A set of functions to handle import/export between R and Datavyu
 \code{\link{r2datavyu}} \cr
 \code{\link{temporal_align}} \cr
 \code{\link{ts2frame}} \cr
+\cr \cr
+For more details, see \url{https://github.com/iamamutt/datavyu}
 }
 
