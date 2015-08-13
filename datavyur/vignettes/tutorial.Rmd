@@ -10,17 +10,17 @@ vignette: >
 ---
 
 ```{r, echo=FALSE}
-knitr::opts_chunk$set(eval=FALSE)
+knitr::opts_chunk$set(eval=FALSE, comment = ">")
 library(datavyur)
 ```
 
 
 # Basic `datavyur` usage
 
-This section will briefly outline how to use some of the functions found in the `datavyur` package.
-To follow along, make sure you know where your `.csv` files have been saved when you used the `datavyu2csv.rb` script in the previous step. If you don't have `.csv` files to work with, you can use the default ones built into this package.
+This section will outline how to use some of the basic functions found in the `datavyur` package.
+To follow along, make sure you know where your `.csv` files have been saved when you used the `datavyu2csv.rb` script to convert `.opf` columns to individual `.csv` files. If you don't have `.csv` files to work with, you can use the default ones built into this package, as shown in the examples.
 
-First, you need to load the `datavyur` library. Make sure it has already been installed before loading. If you're reading this on GitHub, go here to install: 
+First, you need to load the `datavyur` library. Make sure it has already been installed before loading (obviously, this is already done if reading this documentation in R). If you're reading this on GitHub, go here to install:
 
 [How to install datavyur](https://github.com/iamamutt/datavyu#how-to-install)
 
@@ -31,7 +31,7 @@ Use the R function `library` to load the `datvyur` package after it has been ins
 library(datavyur)
 ```
 
-You have to then let R know where your `datavyur` data is at. This is the specially formatted `.csv` files obtained when using the Ruby script `datavyu2csv.rb`, as seen in this tutorial:
+You have to then let R know where your `datavyur` data is at. These are specially formatted `.csv` files obtained when using the Ruby script `datavyu2csv.rb`, as seen in this tutorial:
 
 (Getting started with Datavyu)[https://github.com/iamamutt/datavyu/blob/master/tutorial/datavyu_tutorial.md]
 
@@ -48,7 +48,13 @@ By default, the path is set to use the data built into this package. The code be
 getOption("datavyur.folder")
 ```
 
-An alternative to setting an R option is to just create an R object that holds the path string, like so:
+These are the default files we'll be working with if not using a custom folder.
+
+```{r, echo=FALSE, eval=TRUE}
+list.files(getOption("datavyur.folder"))
+```
+
+An alternative to setting the `datavyur.folder` R option is to just create an R object that holds the path to your data folder, like so:
 
 ```{r}
 # Find the full path to where the .csv files have been saved
@@ -65,14 +71,14 @@ The `datavyur` package provides several utility functions to simplify the data m
 ?import_column
 ```
 
-Type in the search below to see a list of functions available in the `datavyur` package.
+Type in the code below to see a list of functions available in the `datavyur` package.
 
 ```{r}
 # see help documentation
 ?datavyur
 ```
 
-## Viewing column information
+## Viewing `.opf` column information
 
 The function `datavyu_col_search` will search through the path you specify and find all Datavyu files that have been already exported to `.csv` files, along with their column names and other attributes.
 
@@ -84,6 +90,15 @@ datavyu_col_search()
 datavyu_col_search(data_path)
 ```
 
+The function will return a `data.frame` with the following information:
+
+- file: the name of the original `.opf` file that the column comes from
+- column: the column name corresponding to the current `.csv` file
+- args: the arguments (codes) found in that specific column
+- classes: what R things the data should be classified as
+- local: the full path to where the `.csv` file is located
+
+
 ```{r, echo=FALSE, eval=TRUE, results='asis'}
 # if datavyur.folder option has been set
 fdat <- datavyu_col_search()
@@ -91,7 +106,8 @@ fdat$local <- "./*.csv"
 knitr::kable(fdat)
 ```
 
-To view only the column names from each file:
+
+To view only the unique column names from each file you can use the optional argument `cnames`:
 
 ```{r}
 # if datavyur.folder option has been set
@@ -105,14 +121,19 @@ knitr::kable(datavyu_col_search(unq=TRUE, cnames="column"))
 
 ## Importing Datavyu columns into R
 
-The ruby script `datavyu2csv.rb` exports a `.csv` file for each column within each file. To combine them back together in R you'll use the function `import_column`. You'll need to know the path to your data again if not already set, and the names of the columns you're trying to import (using the `datavyu_col_search`, if you don't already know this).
+As previously mentioned, the Ruby script `datavyu2csv.rb` exports a `.csv` file for each column within each file. To combine them back together in R you'll use the function `import_column`. You'll need to know the path to your data again if not already set, and the exact names of the columns you're trying to import (using the `datavyu_col_search`, if you don't already know this).
 
 The code below will search the example `.csv` and look for columns with a specific name, them load them into R. This is assuming the folder path has already been set above in the options. If not, set the `folder` argument from this function to a path pointing to the data folder.
 
 ```{r, eval=TRUE}
 # load columns as separate data frames
 child_hands <- import_column("childhands") # or import_column("childhands", data_path)
-parent_hands <- import_column("parenthands")
+```
+
+partial data obtained from `child_hands`:
+
+```{r, echo=FALSE, eval=TRUE, results='asis'}
+knitr::kable(head(child_hands))
 ```
 
 You can also append the datavyu column name to the data using the argument `append.colnames` and setting it to `TRUE`.
@@ -121,28 +142,38 @@ You can also append the datavyu column name to the data using the argument `appe
 parent_hands <- import_column("parenthands", append.colnames = TRUE)
 ```
 
-
-partial data obtained from `child_hands`:
-
-```{r, echo=FALSE, eval=TRUE, results='asis'}
-knitr::kable(head(child_hands))
-```
-
 partial data obtained from `parent_hands` with `append.colnames = TRUE`:
 
 ```{r, echo=FALSE, eval=TRUE, results='asis'}
 knitr::kable(head(parent_hands))
 ```
 
-## Merging Nested Columns
 
-If you have columns that are originally nested within each other, you can get it back to this format by using the function `merge_nested`. The example below will attempt to merge two data frames by timestamps (even though these data aren't really nested).
 
-Since these data aren't really nested, you'll get a lot of rows that won't merge. But you can still include them if you want. This is the default behavior of the function.
+## Checking for invalid codes and timestamps
+
+
+## Writing R Data to a `.csv` spreadsheet
+
+You can save any R `data.frame` to a spreadsheet that can be opened in Excel. You don't need the `datavyur` packages for this, and comes with standard R. You can do this for any R `data.frame`. This will write the data `z2`
+
+```{r}
+write.csv(z2, file="merged_data.csv", row.names=FALSE, na="")
+```
+
+# Advanced usage
+
+## Merging nested columns
+
+If you have columns that are originally nested within each other, you can get them back to this format by using the function `merge_nested`. The example below will attempt to merge two Datavyu columns by timestamps (even though these example data aren't really nested). Merging nested columns only works if you have two separate columns in your original `.opf` file, with cells in one column being nested within cells in another column. At the moment, it won't work with 3 or more nested columns (e.g., level 3 nested within level 2, which is nested within level 1).
+
+All you need to really supply for the `merge_nested` function is the column name of the top level and the column name of the lower level.
 
 ```{r}
 z1 <- merge_nested(child_hands, parent_hands)
 ```
+
+Since these exaple data aren't really nested, you'll get a lot of rows that won't merge. But you can still include them if you want. This is the default behavior of the function.
 
 The data `z1` above merges two data frames by column and includes any rows that couldn't be merged. If you see `NA` for any rows corresponding to `column.1` (the higher level), this means that timestamps were found for the lower level data but not for the higher level. This should not happen if you're data are truly nested. Fix any errors in your original `.opf` file if this is the case. An `NA` for `column.2` means that higher level timestamps exist, but no lower level data. This is okay since sometimes no observations exists for some higher level row.
 
@@ -151,20 +182,6 @@ To merge without all the `NA` values, do the following. I'm also specifying diff
 ```{r}
 z2 <- merge_nested(child_hands, parent_hands, ids=c(".higher", ".lower"), keepall=FALSE)
 ```
-
-## Checking for invalid codes and timestamps
-
-
-## R Data to Spreadsheet
-
-Save any R data frame to a spreadsheet that can be opened in Excel. You don't need the `datavyur` packages for this, and comes with standard R. You can do this for any R data frame.
-
-```{r}
-write.csv(z2, file="merged_data.csv", row.names=FALSE, na="")
-
-```
-
-# Advanced usage
 
 ## Align data by time or by cell number (ordinal)
 

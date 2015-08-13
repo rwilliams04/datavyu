@@ -6,7 +6,7 @@
 
 # Getting Started
 
-You're going to have to learn some Ruby. It won't be that hard, you won't need to know that much, just enough to write some basic scripts.
+You're going to have to learn some Ruby. It won't be that hard, you won't need to know that much, just enough to write some basic scripts. If your goal is to just extract coded data from Datavyu without learning Ruby, but would like to use other software such as R, see the `datavyur` section at the end of this tutorial. 
 
 ## Installing Datavyu
 
@@ -20,22 +20,26 @@ You can use any text editor you want to write your code (please don't use Word).
 
 [http://www.sublimetext.com/3](http://www.sublimetext.com/3)
 
+## Grabbing the contents of this GitHub repository
+
+It's a good idea to go ahead and download the whole github repository by clicking "Download ZIP" from here [https://github.com/iamamutt/datavyu](https://github.com/iamamutt/datavyu). This way, you can edit and have a copy of all the files used in this tutorial. Alternatively, you can create a GitHub account and clone the repository if you know how to use git. 
+
 # Running scripts
 
-If you open up Datavyu then go to `Script` then `Run Script`, you'll be asked to locate a file that contains the code that needs to be run. It's up to you to write the code that will tell the program what to do, which is typically importing columns or exporting data from already coded columns.
+If you open up Datavyu then go to `Script` then `Run Script`, you'll be asked to locate a Ruby file that contains the code that needs to be run. It's up to you to write the code that will tell the program what to do, which is typically importing columns or exporting data from already coded columns.
 
 Let's create a simple script that doesn't really do anything important.
 
 - Open up your text editor and save the file as `newcolumns.rb`. You can save it to the desktop or wherever you want.
 
-- Make sure the following line is at the top of your script. This line loads all the code already written by the Datavyu people to allow you to talk to their program using the Ruby language.
+- Make sure the following line is at the top of your script. This line loads all the code already written by the Datavyu developers to allow you to communicate with their program using the Ruby language.
 
 
 ```{.ruby .numberLines}
 require 'Datavyu_API.rb'
 ```
 
-- Next you'll need to create a section that has all the code you want to run through Datavyu. On the next ling copy the following code.
+- Next you'll need to create a section that has all the code you actually want to run. This section of code is always between `begin` and `end` statements. On the next ling copy the following code.
 
 ```{.ruby .numberLines}
 begin
@@ -46,7 +50,7 @@ begin
 end
 ```
 
-- Next, write a line of code that just prints a message to the console (the little thing that runs the scripts and outputs errors for you). You'll use the `puts` function which tries to print some output. This is useful for debugging. Your code should look like this below.
+- Next, write a line of code that just prints a message to the console (the little box that runs the scripts and outputs errors for you). You'll use the `puts` function which tries to print some output. This is useful for debugging. Your code should look like this below.
 
 ```{.ruby .numberLines}
 require 'Datavyu_API.rb'
@@ -249,13 +253,14 @@ After the data is collected in `lineData`, then you have to write it to your fil
 ```
 
 
-# API Reference
+# Ruby API Reference
 
 Look here for a list of examples of the types of methods (functions) you can use. You should check this often since the functions tend to change periodically because the program is still in beta.
 
 [http://datavyu.org/user-guide/api/reference.html](http://datavyu.org/user-guide/api/reference.html)
 
-# R and datavyur
+
+# R and the `datavyur` package
 
 To use the `datavyur` R package you must first do the following steps to install it. You can skip these if everything has already been installed.
 
@@ -263,14 +268,24 @@ To use the `datavyur` R package you must first do the following steps to install
 2. Install RStudio: [http://www.rstudio.com/products/rstudio/download/](http://www.rstudio.com/products/rstudio/download/)
 3. Install datavyur: [https://github.com/iamamutt/datavyu#datavyur](https://github.com/iamamutt/datavyu#datavyur)
 
-## Export Datavyu data using general export script
+## Export Datavyu data using the general export script
 
-Most of the functions in the R package `datavyur` depend on how the Datavyu data (.opf files) have been exported. We'll use the script `datavyu2csv.rb` to export all of our `.opf` data into separate `.csv` files, which can then be loaded into R. This will search through all subfolders and find any `.opf` files, open each one, and for each column, export a `.csv` with the argument data for each column.
+Most of the functions in the R package `datavyur` depend on how the Datavyu data (.opf files) have been exported. We'll use the script `datavyu2csv.rb` to export all of our `.opf` data into separate `.csv` files, which can then be searched and loaded into R. The `datavyu2csv.rb` script will search through all subfolders and find any `.opf` files, open each one, and for each column in the `.opf` file, export the data as `.csv`, with each argument as a separate variable.
 
 The script you need to do this can be found here: [https://github.com/iamamutt/datavyu/tree/master/general](https://github.com/iamamutt/datavyu/tree/master/general)
 
-It's a good idea to go ahead and download the whole github repository by clicking "Download ZIP" from here [https://github.com/iamamutt/datavyu](https://github.com/iamamutt/datavyu).
+
 
 ### Using `datavyu2csv.rb`
 
 Open up Datavyu, then run the script `datavyu2csv.rb`. You'll be asked to select the folder that contains all of your `.opf` files. If you have them in separate folders, that's okay. It will search through subfolders if you tell it to start at some root folder. The script will create a new folder called `datavyu_opf_output_DATE` within the root folder you just selected. If successful, you should see multiple `.csv` files in this new folder along with a `log.txt` file showing what was exported and any errors found during export. This is the data you'll use with R (and can also be opened in a spreadsheet application).
+
+You can see an example of how the exported `.csv` files will look like by looking at the contents in `tutorial/R/datavyu2csv`. These files are the result of using the `datavyu2csv.rb` Ruby script in Datavyu on the contents in the folder `tutorial/R/csv2opf`.
+
+### Viewing the `datavyur` tutorial
+
+Once the `datavyur` package has been installed (see above), view the tutorial to get started on using the functions from the package. In R, run the following code to see the tutorial:
+
+```r
+vignette(topic = "tutorial", package = "datavyur")
+```
