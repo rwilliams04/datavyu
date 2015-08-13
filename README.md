@@ -23,7 +23,9 @@ The script is to be run within Datavyu.
 
 # tutorial
 
-Scripting tutorial for the lab catered towards beginners. The tutorial is not very detailed and focuses mostly on quickly making several columns with multiple `<codes>` and also some basics on extracting data from Datavyu using Ruby.
+Scripting tutorial for the cogdevlab catered towards beginners. The tutorial is not very detailed and focuses mostly on quickly making several columns with multiple `<codes>`, and also some basics on extracting data from Datavyu using Ruby. A more detailed guide can be found on the datavyu.org website here:
+
+[http://datavyu.org/user-guide/index.html](http://datavyu.org/user-guide/index.html)
 
 # datavyur
 
@@ -33,9 +35,11 @@ This is an R package to help with getting data from Datavyu and into R and back 
 
 ### Windows dependencies
 
-If you're on Windows, you might need to install rtools first before you can use the `devtools` package in step 1. To install, see here: [http://cran.r-project.org/bin/windows/Rtools/](http://cran.r-project.org/bin/windows/Rtools/)
+If you're on Windows, you might need to install rtools first before you can use the `devtools` package in step 1. To install, see here:
 
-###Step 1.
+[http://cran.r-project.org/bin/windows/Rtools/](http://cran.r-project.org/bin/windows/Rtools/)
+
+### Step 1.
 
 First, open RStudio and then install the package `devtools` from CRAN. This is so you can get the package from the internet (GitHub) and build it.
 
@@ -43,17 +47,17 @@ First, open RStudio and then install the package `devtools` from CRAN. This is s
 install.packages("devtools")
 ```
 
-###Step 2.
+### Step 2.
 
-Once the `devtools` package is installed, you'll use the `install_github` function from the package to download and install this `datavyur` package from this GitHub repository. Copy the code below and paste it into the console to install the package with all other required packages:
+Once the `devtools` package is installed, you'll use the `install_github` function from the package to download and install this `datavyur` package from this GitHub repository. Copy all the code below and paste it into the console to install the package with all other required packages:
 
 ```r
 devtools::install_github("iamamutt/datavyu/datavyur", build_vignettes = TRUE, dependencies = TRUE)
 ```
 
-###Step 3.
+### Step 3.
 
-The package is now installed. Load the package as you normally would any other package (see below). Repeat steps 2--3 if there are updates to the `datavyur` package or to install it on another computer. You should now see it in your packages tab within RStudio (after clicking refresh).
+The package should now be installed. Load the package as you normally would any other package (see below). Repeat steps 2--3 if there are updates to the `datavyur` package. You should now see it in your packages tab within RStudio (after clicking refresh).
 
 ```r
 library(datavyur)

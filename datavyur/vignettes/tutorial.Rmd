@@ -15,7 +15,7 @@ library(datavyur)
 ```
 
 
-## Using `datavyur`
+# Basic `datavyur` usage
 
 This section will briefly outline how to use some of the functions found in the `datavyur` package.
 To follow along, make sure you know where your `.csv` files have been saved when you used the `datavyu2csv.rb` script in the previous step. If you don't have `.csv` files to work with, you can use the default ones built into this package.
@@ -72,7 +72,7 @@ Type in the search below to see a list of functions available in the `datavyur` 
 ?datavyur
 ```
 
-### Viewing column information
+## Viewing column information
 
 The function `datavyu_col_search` will search through the path you specify and find all Datavyu files that have been already exported to `.csv` files, along with their column names and other attributes.
 
@@ -84,36 +84,57 @@ datavyu_col_search()
 datavyu_col_search(data_path)
 ```
 
-```{r, echo=FALSE, eval=TRUE}
+```{r, echo=FALSE, eval=TRUE, results='asis'}
 # if datavyur.folder option has been set
-knitr::kable(datavyu_col_search())
+fdat <- datavyu_col_search()
+fdat$local <- "./*.csv"
+knitr::kable(fdat)
 ```
 
 To view only the column names from each file:
 
 ```{r}
+# if datavyur.folder option has been set
 datavyu_col_search(unq=TRUE, cnames="column")
 ```
 
-```{r, echo=FALSE, eval=TRUE}
-# if datavyur.folder option has been set
+```{r, echo=FALSE, eval=TRUE, results='asis'}
 knitr::kable(datavyu_col_search(unq=TRUE, cnames="column"))
 ```
 
 
-### Importing Datavyu columns into R
+## Importing Datavyu columns into R
 
 The ruby script `datavyu2csv.rb` exports a `.csv` file for each column within each file. To combine them back together in R you'll use the function `import_column`. You'll need to know the path to your data again if not already set, and the names of the columns you're trying to import (using the `datavyu_col_search`, if you don't already know this).
 
 The code below will search the example `.csv` and look for columns with a specific name, them load them into R. This is assuming the folder path has already been set above in the options. If not, set the `folder` argument from this function to a path pointing to the data folder.
 
-```{r}
+```{r, eval=TRUE}
 # load columns as separate data frames
 child_hands <- import_column("childhands") # or import_column("childhands", data_path)
 parent_hands <- import_column("parenthands")
 ```
 
-### Merging Nested Columns
+You can also append the datavyu column name to the data using the argument `append.colnames` and setting it to `TRUE`.
+
+```{r, eval=TRUE}
+parent_hands <- import_column("parenthands", append.colnames = TRUE)
+```
+
+
+partial data obtained from `child_hands`:
+
+```{r, echo=FALSE, eval=TRUE, results='asis'}
+knitr::kable(head(child_hands))
+```
+
+partial data obtained from `parent_hands` with `append.colnames = TRUE`:
+
+```{r, echo=FALSE, eval=TRUE, results='asis'}
+knitr::kable(head(parent_hands))
+```
+
+## Merging Nested Columns
 
 If you have columns that are originally nested within each other, you can get it back to this format by using the function `merge_nested`. The example below will attempt to merge two data frames by timestamps (even though these data aren't really nested).
 
@@ -131,7 +152,25 @@ To merge without all the `NA` values, do the following. I'm also specifying diff
 z2 <- merge_nested(child_hands, parent_hands, ids=c(".higher", ".lower"), keepall=FALSE)
 ```
 
-### R Data to Datavyu
+## Checking for invalid codes and timestamps
+
+
+## R Data to Spreadsheet
+
+Save any R data frame to a spreadsheet that can be opened in Excel. You don't need the `datavyur` packages for this, and comes with standard R. You can do this for any R data frame.
+
+```{r}
+write.csv(z2, file="merged_data.csv", row.names=FALSE, na="")
+
+```
+
+# Advanced usage
+
+## Align data by time or by cell number (ordinal)
+
+
+
+## R Data to Datavyu
 
 If you have R data that you want to convert back into something that the Datavyu program can recognize, you can do so with the function `r2datavyu`. You just need to make sure you have the columns `ordinal`, `onset`, and `offset` in your R data. You can pass all data frames you want to convert as a single `list` object. Each object in the list must be named (list items must have names)! Or the conversion to `.opf` will not work.
 
@@ -144,15 +183,10 @@ The function above will save the file as a weirdly formatted `.csv` file, but th
 
 In Datavyu, run the script called `csv2opf.rb`. This will convert all `.csv` files (properly formmated by using the function `r2datavyu`) in a folder to `.opf` files, which can now be opened in Datavyu directly.
 
-### R Data to Spreadsheet
 
-Save any R data frame to a spreadsheet that can be opened in Excel. You don't need the `datavyur` packages for this, and comes with standard R. You can do this for any R data frame.
+# Other useful functions
 
-```{r}
-write.csv(z2, file="merged_data.csv", row.names=FALSE, na="")
-```
-
-### Fake Data Example
+## Making fake data
 
 The `datavyur` package provides a function to create fake data called `datavyu_dat`. Below I'm just creating two separate datasets using this function. This is handy for seeing how your data should be formatted if you want to save an R data back into Datavyu data.
 
@@ -161,7 +195,7 @@ x <- as.data.frame(datavyu_dat(n1=25, n2=2)[[1]])
 y <- datavyu_dat(n1=2, n2=100)[[2]]
 ```
 
-### Time Conversion
+## Time Conversion
 
 Datavyu prints timestamps in milliseconds. You can convert this to a more readable format by using the function `ms2time`.
 
@@ -177,4 +211,7 @@ You can also save this conversion back into your R data if you like.
 x$onset_str <- ms2time(x$onset)
 x$offset_str <- ms2time(x$offset)
 ```
+
+## Timestamps to frame numbers
+
 

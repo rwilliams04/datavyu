@@ -26,16 +26,16 @@ If you open up Datavyu then go to `Script` then `Run Script`, you'll be asked to
 
 Let's create a simple script that doesn't really do anything important.
 
-1. Open up your text editor and save the file as `newcolumns.rb`. You can save it to the desktop or wherever you want.
+- Open up your text editor and save the file as `newcolumns.rb`. You can save it to the desktop or wherever you want.
 
-2. Make sure the following line is at the top of your script. This line loads all the code already written by the Datavyu people to allow you to talk to their program using the Ruby language.
+- Make sure the following line is at the top of your script. This line loads all the code already written by the Datavyu people to allow you to talk to their program using the Ruby language.
 
 
 ```{.ruby .numberLines}
 require 'Datavyu_API.rb'
 ```
 
-3. Next you'll need to create a section that has all the code you want to run through Datavyu. On the next ling copy the following code.
+- Next you'll need to create a section that has all the code you want to run through Datavyu. On the next ling copy the following code.
 
 ```{.ruby .numberLines}
 begin
@@ -46,7 +46,7 @@ begin
 end
 ```
 
-4. Next, write a line of code that just prints a message to the console (the little thing that runs the scripts and outputs errors for you). You'll use the `puts` function which tries to print some output. This is useful for debugging. Your code should look like this below.
+- Next, write a line of code that just prints a message to the console (the little thing that runs the scripts and outputs errors for you). You'll use the `puts` function which tries to print some output. This is useful for debugging. Your code should look like this below.
 
 ```{.ruby .numberLines}
 require 'Datavyu_API.rb'
@@ -61,7 +61,7 @@ begin
 end
 ```
 
-5. Save the file and you can now run the script from within Datavyu. You should see the following output in your Scripting Console window.
+- Save the file and you can now run the script from within Datavyu. You should see the following output in your Scripting Console window.
 
 ```
 *************************
@@ -87,13 +87,13 @@ Before you start to make the columns that need to be coded you should plan ahead
 
 Once you know this information you can start making your columns using a script. Note that you can make columns manually from within Datavyu, but I would not recommend this if you are coding multiple participants where each participant has their own file. You would have to make each column manually and make sure they are identical across all files by saving some common template `.opf` file. Often times, this template may be overwritten and altered accidentally, leading to errors when exporting data. Instead you can run a script that will automate this process.
 
-1. The first thing you need to do is figure out what your column name is going to be.
+- The first thing you need to do is figure out what your column name is going to be.
     - Example: If this column will hold participant information, you may call it `info`. Keep the naming of columns simple, since you may get errors for weird characters in your column name.
 
-2. Next you are going to want to know the arguments that need to be filled in for each cell (these are sometimes called _codes_ in Datavyu).
+- Next you are going to want to know the arguments that need to be filled in for each cell (these are sometimes called _codes_ in Datavyu).
     - Example: If your column is participant information, then codes/arguments that you might consider are `name`, `age`, `idnumber`, things like that. This is entirely dependent on what you want to accomplish with your column.
 
-3. After you column is generated, actually do some coding. This will get you an idea of what it's like to code for the column you created, and you'll likely find that you need to make some changes to your column arguments or how you may have to split a column into separate columns. Sometimes you may find that you have more columns than you actually need, and you can just add more arguments to a single column to accomplish the same thing.
+- After you column is generated, actually do some coding. This will get you an idea of what it's like to code for the column you created, and you'll likely find that you need to make some changes to your column arguments or how you may have to split a column into separate columns. Sometimes you may find that you have more columns than you actually need, and you can just add more arguments to a single column to accomplish the same thing.
 
 ## createNewColumn
 
@@ -257,7 +257,7 @@ Look here for a list of examples of the types of methods (functions) you can use
 
 # R and datavyur
 
-To use the `datavyur` R package you must first do the following steps to install this package. You can skip these if everything has already been installed.
+To use the `datavyur` R package you must first do the following steps to install it. You can skip these if everything has already been installed.
 
 1. Install R: [http://www.r-project.org/](http://www.r-project.org/)
 2. Install RStudio: [http://www.rstudio.com/products/rstudio/download/](http://www.rstudio.com/products/rstudio/download/)
