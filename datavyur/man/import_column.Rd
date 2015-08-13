@@ -5,14 +5,17 @@
 \title{Import Datavyu column into R}
 \usage{
 import_column(column, folder = getOption("datavyur.folder"), asList = FALSE,
-  ...)
+  append.colnames = FALSE, ...)
 }
 \arguments{
 \item{column}{The name of the column to import as used in the Datavyu .opf file}
 
 \item{folder}{Character string corresponding to the folder path to be scanned. Defaults to option \code{datavyur.folder}.}
 
-\item{asList}{Logical value indicating to return a list or data frame}
+\item{asList}{Logical value indicating to return a list or data frame (default).}
+
+\item{append.colnames}{If \code{true}, add column name to each argument,
+e.g., \code{column.arg}, instead of having column as a variable in the data.}
 
 \item{...}{Additional options passed to the function \code{data.table::fread}}
 }
@@ -27,6 +30,7 @@ Note: If the same column name was used but has different number of arguments the
 This function assumes that the .csv is structured in a way based on how the \code{datavyu2csv.rb} script exports data.
 }
 \examples{
-import_column("myfolder", "mycolumn")
+import_column("childhands")
+import_column("childhands", append.colnames = TRUE)
 }
 
