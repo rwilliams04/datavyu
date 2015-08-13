@@ -1,9 +1,5 @@
 # Datavyu Functions --------------------------------------------------------------
 
-## TODO:
-# temporal_align should include original timestamps
-# ordinal_align should include all columns found in all.cols
-
 #' Fake Datavyu data
 #' 
 #' This function will create fake data in the R format needed to import back into the Datavyu software
@@ -171,12 +167,21 @@ r2datavyu <- function(rlist, filename="datavyur_export") {
 #' 
 #' @param column The name of the column to import as used in the Datavyu .opf file
 #' @param folder Character string corresponding to the folder path to be scanned. Defaults to option \code{datavyur.folder}.
-#' @param asList Logical value indicating to return a list or data frame
+#' @param asList Logical value indicating to return a list or data frame (default).
+#' @param append.colnames If \code{true}, add column name to each argument, 
+#' e.g., \code{column.arg}, instead of having column as a variable in the data. 
 #' @param ... Additional options passed to the function \code{data.table::fread}
+#'
 #' @examples
-#' import_column("myfolder", "mycolumn")
+#' import_column("childhands")
+#' import_column("childhands", append.colnames = TRUE)
 #' @export
-import_column <- function(column, folder=getOption("datavyur.folder"), asList=FALSE, ... ) {
+import_column <- function(column, 
+                          folder=getOption("datavyur.folder"), 
+                          asList=FALSE, 
+                          append.colnames=FALSE,
+                          ...)
+{
     
     opf_info <- opf_and_col_selector(all.opf = TRUE, all.cols = column, folder = folder)
     
@@ -206,6 +211,11 @@ import_column <- function(column, folder=getOption("datavyur.folder"), asList=FA
         dat <- do.call(rbind, dat)
     }
     
+    if (append.colnames) {
+        append_colname(dat, column, c("file", "column"))
+        dat[, column := NULL]
+    }
+
     return(as.data.frame(dat))
 }
 
