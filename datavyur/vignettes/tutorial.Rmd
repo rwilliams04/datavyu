@@ -10,41 +10,55 @@ vignette: >
 ---
 
 ```{r, echo=FALSE}
-knitr::opts_chunk$set(echo=FALSE, eval=FALSE)
+knitr::opts_chunk$set(eval=FALSE)
+library(datavyur)
 ```
 
 
 ## Using `datavyur`
 
 This section will briefly outline how to use some of the functions found in the `datavyur` package.
-Open up the file called `rcode.R` which is found in the `tutorial/R` folder. This will show you some examples on how to use the `datavyur` package you've already installed.
-To follow along, make sure you know where your .`csv` files have been saved when you used the `datavyu2csv.rb` script in the previous step. If you don't have `.csv` files, you can use the ones in the `tutorial/R/data` folder to work with.
+To follow along, make sure you know where your `.csv` files have been saved when you used the `datavyu2csv.rb` script in the previous step. If you don't have `.csv` files to work with, you can use the default ones built into this package.
 
-First, you need to load the `datavyur` library. Make sure it has already been installed before loading.
+First, you need to load the `datavyur` library. Make sure it has already been installed before loading. If you're reading this on GitHub, go here to install: 
+
+[How to install datavyur](https://github.com/iamamutt/datavyu#how-to-install)
+
+Use the R function `library` to load the `datvyur` package after it has been installed
 
 ```{r}
 # Load the datavyur library to use the functions below
 library(datavyur)
 ```
 
-You have to then let R know where your data is at. To set the path of the data that was exported, override the default option `datavyur.folder` by doing do the following in RStudio:
+You have to then let R know where your `datavyur` data is at. This is the specially formatted `.csv` files obtained when using the Ruby script `datavyu2csv.rb`, as seen in this tutorial:
+
+(Getting started with Datavyu)[https://github.com/iamamutt/datavyu/blob/master/tutorial/datavyu_tutorial.md]
+
+To set the default path for the data that was exported, override the default option `datavyur.folder` by doing the following in the RStudio console:
 
 ```{r}
 # Replace the string path/to/data with the location to where your data is located, relative to working directory.
 options(datavyur.folder="path/to/data")
 ```
 
-An alternative to setting an R option is to just create an object that holds the path string, like so:
+By default, the path is set to use the data built into this package. The code below will tell you where `datavyur` is searching for Datavyu files.
+
+```{r}
+getOption("datavyur.folder")
+```
+
+An alternative to setting an R option is to just create an R object that holds the path string, like so:
 
 ```{r}
 # Find the full path to where the .csv files have been saved
-# Replace "data" with the found path
-data_path <- normalizePath("data")
+# Replace path/to/data with the correct path
+data_path <- normalizePath("path/to/data")
 ```
 
-You can then use this path as an argument for some of the functions, like `import_column` or `datavyu_col_search`.
+You can then use this path as an argument for some of the functions, like when using `import_column` or `datavyu_col_search`, as you'll see later.
 
-The `datavyur` package provides several utility functions to simplify the process. In the command window you can use the `?` operator to see the manual for each function. For example, to see the manual for the `import_column` function type the following in the command window:
+The `datavyur` package provides several utility functions to simplify the data manipulation process. In the command window you can use the `?` operator to see the manual for each function. For example, to see the manual for the `import_column` function type the following in the command window:
 
 ```{r}
 # see help documentation
@@ -58,18 +72,21 @@ Type in the search below to see a list of functions available in the `datavyur` 
 ?datavyur
 ```
 
-### Viewing Column Names
+### Viewing column information
 
-The function `datavyu_col_search` will search through the path you've specified with `data_path` and find all Datavyu files that have been already exported to `.csv` files, along with their column names and other attributes.
-
-To view the names for each file:
+The function `datavyu_col_search` will search through the path you specify and find all Datavyu files that have been already exported to `.csv` files, along with their column names and other attributes.
 
 ```{r}
-# if datavyur.folder has been set
+# if datavyur.folder option has been set
 datavyu_col_search()
 
-# otherwise
+# otherwise use explicit folder path stored in data_path
 datavyu_col_search(data_path)
+```
+
+```{r, echo=FALSE, eval=TRUE}
+# if datavyur.folder option has been set
+knitr::kable(datavyu_col_search())
 ```
 
 To view only the column names from each file:
@@ -78,9 +95,15 @@ To view only the column names from each file:
 datavyu_col_search(unq=TRUE, cnames="column")
 ```
 
-### Importing Columns
+```{r, echo=FALSE, eval=TRUE}
+# if datavyur.folder option has been set
+knitr::kable(datavyu_col_search(unq=TRUE, cnames="column"))
+```
 
-The ruby script `datavyu2csv.rb` exports a `.csv` file for each column within each file. To combine them back together in R you'll use the function `import_column`. You'll need to know the path to your data again and the names of the columns you're trying to import (using the `datavyu_col_search`, if you don't already know this).
+
+### Importing Datavyu columns into R
+
+The ruby script `datavyu2csv.rb` exports a `.csv` file for each column within each file. To combine them back together in R you'll use the function `import_column`. You'll need to know the path to your data again if not already set, and the names of the columns you're trying to import (using the `datavyu_col_search`, if you don't already know this).
 
 The code below will search the example `.csv` and look for columns with a specific name, them load them into R. This is assuming the folder path has already been set above in the options. If not, set the `folder` argument from this function to a path pointing to the data folder.
 
