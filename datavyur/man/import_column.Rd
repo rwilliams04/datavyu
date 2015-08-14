@@ -5,7 +5,7 @@
 \title{Import Datavyu column into R}
 \usage{
 import_column(column, folder = getOption("datavyur.folder"), asList = FALSE,
-  append.colnames = FALSE, ...)
+  append.colnames = TRUE, classes = getOption("datavyur.classlist"), ...)
 }
 \arguments{
 \item{column}{The name of the column to import as used in the Datavyu .opf file}
@@ -16,6 +16,8 @@ import_column(column, folder = getOption("datavyur.folder"), asList = FALSE,
 
 \item{append.colnames}{If \code{true}, add column name to each argument,
 e.g., \code{column.arg}, instead of having column as a variable in the data.}
+
+\item{classes}{List of new classes to override guessed classes when reading in .csv data. see \code{data.table::fread}}
 
 \item{...}{Additional options passed to the function \code{data.table::fread}}
 }

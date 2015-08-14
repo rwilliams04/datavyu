@@ -6,7 +6,7 @@
 \usage{
 temporal_align(all.opf = TRUE, all.cols = TRUE,
   folder = getOption("datavyur.folder"), fps = 30, keep.frames = TRUE,
-  colClasses, ...)
+  classes = getOption("datavyur.classlist"), ...)
 }
 \arguments{
 \item{all.opf}{Use all found .opf files from \code{folder} or specify .opf file names to use. Must
@@ -20,11 +20,11 @@ as a character vector.}
 \item{fps}{Common framerate to use for alignment. Defaults to 30 frames per second video.}
 
 \item{keep.frames}{Keep the frame_number column, which will result in a much larger dataset.
-If \code{keep.frames=FALSE}, then all you know is which two events overlap, not knowing for how long.
+If \code{keep.frames=FALSE}, then all you know is which two events overlap to some degree, not knowing for how long.
 If \code{keep.frames=TRUE} (default), you can calculate the number of frames that overlap between two events, and if fps is know,
 you can convert this total to milliseconds.}
 
-\item{colClasses}{List of new classes to override guessed classes when reading in .csv data. see \code{data.table::fread}}
+\item{classes}{List of new classes to override guessed classes when reading in .csv data. see \code{data.table::fread}}
 
 \item{...}{Additional arguments passed to \code{data.table::fread},
 except \code{stringsAsFactors, colClasses, verbose, showProgress}}
@@ -40,7 +40,7 @@ You have the option to set the framerate using \code{fps}. The lower the frame r
 two events will line up in time. This is because the timestamps are converted to frame numbers based on chunking into bins.
 The larger the fps, the larger the bins, and more likely two events will line up in time.
 Note: Sometimes R doesn't get the right class of the imported column argument.
-This can happen if you have weird characters in your data. Use \code{colClasses} to override this.
+This can happen if you have weird characters in your data. Use \code{classes} to override this.
 }
 \examples{
 # set folder path if needed, otherwise use default path with example data.
@@ -55,6 +55,6 @@ ex_data_aligned2 <- temporal_align(all.cols="childhands")
 # example data using additional arguments
 newClasses <- list(integer=c("childhands.look", "parenthands.look"),
                    character=c("childhands.hand", "parenthands.hand"))
-ex_data_aligned3 <- temporal_align(fps=10, colClasses=newClasses)
+ex_data_aligned3 <- temporal_align(fps=10, classes=newClasses)
 }
 

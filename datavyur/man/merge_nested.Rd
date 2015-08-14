@@ -4,31 +4,35 @@
 \alias{merge_nested}
 \title{Merge nested data}
 \usage{
-merge_nested(x, y, ids = c(".1", ".2"), keepall = TRUE, mergeby = NULL)
+merge_nested(c1, c2, folder = getOption("datavyur.folder"),
+  classes = getOption("datavyur.classlist"), ...)
 }
 \arguments{
-\item{x}{top level data frame, (e.g., trial or block)}
+\item{c1}{top level column name as a character, (e.g., trial or block)}
 
-\item{y}{lower level data frame (e.g., eye gazes within trial)}
+\item{c2}{bottom level column name as a character (e.g., eye gazes within trial)}
 
-\item{ids}{Suffixes to use to identify repeated column names}
+\item{folder}{Character string of the name of the folder to be scanned. Defaults to option \code{datavyur.folder}.}
 
-\item{keepall}{whether to keep all non-matching rows (true) or throw away non-matching (false).}
-
-\item{mergeby}{any additional common columns to merge by. Defaults to merging only by \code{file}.}
+\item{...}{Additional options passed to \code{data.table::fread}}
 }
 \description{
-Merges two data frames by onset/offset timestamps
+Merges two Datavyu columns by onset/offset timestamps
 }
 \details{
-Since data is nested, this will repeat rows from the higher level data. Both x and y must be data frames.
+Since data is nested, this will repeat rows from the higher level data.
+If any cell in the lower level is not within a cell in the higher level, it
+will not be in the final data set. This function is to be used only with truly
+nested data. For finer control over potentially overlapping cells see
+\code{\link{temporal_align}} with the option \code{keep.frames=FALSE} and a high
+value for \code{fps} for better precision in aligning timestamps.
 }
 \examples{
-# get data with some rows not nested
-x <- as.data.frame(datavyu_dat(n1=25, n2=2)[[1]])
-y <- datavyu_dat(n1=2, n2=100)[[2]]
+# merge nested data, throwing away lower level cells that are not within higher level cells
+merged <- merged_nested("childhands", "parenthands")
 
-z1 <- merge_nested(x, y)
-z2 <- merge_nested(x, y, ids=c(".higher", ".lower"), keepall=FALSE)
+# another way to merge nested, but contains NAs for cells that are not fully within one another
+# since these data are not nested, you can see how much is being thrown away compared to x
+y <- temporal_align(all.cols=c("childhands", "parenthands"), fps=60, keep.frames=FALSE)
 }
 
