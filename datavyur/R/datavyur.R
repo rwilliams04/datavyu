@@ -46,7 +46,8 @@ NULL
   
   op <- options()
   dv.ops <- list(
-    datavyur.folder = system.file("extdata", package="datavyur")
+    datavyur.folder = system.file("extdata", package="datavyur"),
+    datavyur.classlist = NULL
   )
   toset <- !(names(dv.ops) %in% names(op))
   if(any(toset)) options(dv.ops[toset])
