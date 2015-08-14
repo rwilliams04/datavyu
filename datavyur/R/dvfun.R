@@ -1,224 +1,4 @@
-# Datavyu Functions --------------------------------------------------------------
-
-#' Fake Datavyu data
-#' 
-#' This function will create fake data in the R format needed to import back into the Datavyu software
-#'
-#' The function shows how you can have either a list of columns or an actual data frame.
-#' Either way will work.
-#' 
-#' @param n1 Sample size for variable 1
-#' @param n2 Sample size for variable 2
-#' @return List of datavyu formated data
-#' @examples
-#' my_data <- datavyu_dat()
-#' @export
-datavyu_dat <- function(n1=10, n2=15) {
-    ch_on <- sort(round(runif(n1, 0, 3600000)))
-    pr_on <- sort(round(runif(n2, 0, 3600000)))
-    
-    
-    ch_off <- abs(round(runif(n1, ch_on+1, c(ch_on[2:n1]-1, 3600000))))
-    pr_off <- abs(round(runif(n2, pr_on+1, c(pr_on[2:n2]-1, 3600000))))
-    
-    hand_char <- c("left", "right", "both", "")
-    look_val <- c("0", "1", "")
-    
-    dat <- list(
-        childhands = list(
-            ordinal=1:n1,
-            onset=ch_on,
-            offset=ch_off,
-            hand=sample(hand_char, n1, replace=TRUE),
-            look=sample(look_val, n1, replace=TRUE)
-        ),
-        parenthands = data.frame(
-            ordinal=1:n2,
-            onset=pr_on,
-            offset=pr_off,
-            hand=sample(hand_char, n2, replace=TRUE),
-            look=sample(look_val, n2, replace=TRUE)
-        )
-    )
-    return(dat)
-}
-
-#' R data to Datavyu .csv file
-#' 
-#' Process to transfer R data to Datavyu
-#' 
-#' Exports R data (as a list of lists or dataframes corresponding to Datavyu columns) to a .csv file. 
-#' This can then be used by Datavyu for saving as .opf and importing R data Datvyu. 
-#' Each list item is a different column in the final Datavyu file.
-#' NOTE: Datavyu cannot currently import the .csv files this function creates.
-#' To get the .csv file back into Datavyu, use the \code{csv2opf.rb} file found here: 
-#' \url{http://github.com/iamamutt/datavyu/general}.
-#' 
-#' @param rlist List of lists or data.frames. These are the columns to be used in the final Datavyu file.
-#' @param filename Filename of the .csv file to be created. Leave off extension. May specify path as prefix.
-#' @examples
-#' # First get example data to use
-#' example_data <- datavyu_dat()
-#' 
-#' # See how the example data is structured, as a list with another list and data.frame
-#' # Both the list and data.frame are named. If not named, one will be assigned.
-#' str(example_data)
-#' 
-#' # Export R list to a .csv file for importing into Datavyu
-#' r2datavyu(example_data, "example_file")
-#' @export
-r2datavyu <- function(rlist, filename="datavyur_export") {
-    
-    warnText <- paste0(
-        "\nNote: At the moment there doesn't seem to be a way for datavyu to import", 
-        " a .csv even though you can export to one. To get it back to .opf, use", 
-        " the csv2opf.rb ruby script in the general folder.\n"
-    )
-    
-    warning(simpleWarning(warnText))
-    
-    na2val <- function(x, v="") ifelse(is.na(x), v, x)
-    
-    top_digit <- "#4"
-    
-    n_col <- length(rlist)
-    col_names <- names(rlist)
-    
-    if (n_col < 1) stop(simpleError("no columns found in r list object"))
-    
-    # check for named rlist, add new names if necessary
-    if (is.null(col_names)) {
-        new_names <- paste0("datavyur", 1:n_col)
-        names(rlist) <- new_names
-    } else {
-        no_names <- col_names == ""
-        if (any(no_names)) {
-            new_names <- paste0("datavyur", 1:n_col)[no_names]
-            names(rlist)[no_names] <- new_names
-        }
-    }
-    
-    # go through each column structured as an r list
-    each_col <- lapply(1:n_col, function(col) {
-        
-        # get names of codes
-        codes <- rlist[[col]]
-        col_name <- col_names[col]
-        code_names <- names(codes)
-        
-        if (is.null(code_names)) {
-            stop(simpleError(
-                paste0("ordinal, onset, offset not found for: ", col_name)
-            ))
-        }
-        
-        # check of codes have these common arguments
-        common_code_names <- c("ordinal", "onset", "offset")
-        common_codes_l <- common_code_names %in% code_names
-        custom_code_names <- code_names[!code_names %in% common_code_names]
-        
-        if (!all(common_codes_l)) {
-            stop(simpleError(
-                paste0("ordinal, onset, offset not found for: ", col_name)
-            ))
-        }
-        
-        ts_ord <- codes$ordinal
-        ts_on <- ms2time(codes$onset)[ts_ord]
-        ts_off <- ms2time(codes$offset)[ts_ord]
-        
-        if (length(custom_code_names) == 0) {
-            codes$code1 <- rep(NA, length(ts_ord))
-            custom_code_names <- "code1"
-        }
-        
-        code_str <- paste0(custom_code_names, "|NOMINAL", collapse=",")
-        col_str <- paste0(col_name, " (MATRIX,true,)-", code_str)
-        
-        code_mat <- lapply(custom_code_names, function(cn) {
-            na2val(as.character(codes[[cn]])[ts_ord])
-        })
-        
-        code_mat <- cbind(ts_on, ts_off, do.call(cbind, code_mat))
-        
-        col_dat <- apply(code_mat, 1, function(s) {
-            code_text <- paste0("(", paste0(s[-c(1,2)], collapse=","), ")", collapse="")
-            paste0(s[1], ",", s[2], ",", code_text)
-        })
-        
-        return(c(col_str, col_dat))
-    })
-    
-    text_lines <- c(top_digit, c(each_col, recursive=TRUE))
-    out_file <- file(paste0(filename, ".csv"), "w")
-    writeLines(text_lines, out_file)
-    close(out_file)
-}
-
-#' Import Datavyu column into R
-#' 
-#' Imports a Datavyu column to R when using the datavyu2csv.rb script
-#' 
-#' This function only works if you had previously used the \code{datavyu2csv.rb} script to export a Datavyu file to .csv
-#' This can be obtained from \url{http://github.com/iamamutt/datavyu/general}.
-#' \cr
-#' Note: If the same column name was used but has different number of arguments then you will get an error unless \code{asList=TRUE}.
-#' This function assumes that the .csv is structured in a way based on how the \code{datavyu2csv.rb} script exports data.
-#' 
-#' @param column The name of the column to import as used in the Datavyu .opf file
-#' @param folder Character string corresponding to the folder path to be scanned. Defaults to option \code{datavyur.folder}.
-#' @param asList Logical value indicating to return a list or data frame (default).
-#' @param append.colnames If \code{true}, add column name to each argument, 
-#' e.g., \code{column.arg}, instead of having column as a variable in the data. 
-#' @param ... Additional options passed to the function \code{data.table::fread}
-#'
-#' @examples
-#' import_column("childhands")
-#' import_column("childhands", append.colnames = TRUE)
-#' @export
-import_column <- function(column, 
-                          folder=getOption("datavyur.folder"), 
-                          asList=FALSE, 
-                          append.colnames=FALSE,
-                          ...)
-{
-    
-    opf_info <- opf_and_col_selector(all.opf = TRUE, all.cols = column, folder = folder)
-    
-    static_classes <- c(file="character",
-                        column="character",
-                        onset="integer",
-                        offset="integer",
-                        ordinal="integer")
-    
-    fread_opts <- list(stringsAsFactors=FALSE,
-                       verbose=FALSE,
-                       showProgress=FALSE,
-                       colClasses=static_classes)
-    
-    # overwrite default options
-    ops <- list(...)
-    toset <- !(names(fread_opts) %in% names(ops))
-    fread_opts <- c(fread_opts[toset], ops)
-    
-    dat <- lapply(opf_info$local, function(i) {
-        in_file <- list(input=i)
-        DT <- do.call(data.table::fread, c(in_file, fread_opts))
-        return(data.table::copy(DT))
-    })
-    
-    if (!asList) {
-        dat <- do.call(rbind, dat)
-    }
-    
-    if (append.colnames) {
-        append_colname(dat, column, c("file", "column"))
-        dat[, column := NULL]
-    }
-
-    return(as.data.frame(dat))
-}
-
+# Main Datavyu Functions -------------------------------------------------------
 
 #' Scan .csv files for data
 #' 
@@ -250,76 +30,148 @@ datavyu_col_search <- function(folder=getOption("datavyur.folder"),
 }
 
 
-#' Merge nested data
+#' Import Datavyu column into R
 #' 
-#' Merges two data frames by onset/offset timestamps
+#' Imports a Datavyu column to R when using the datavyu2csv.rb script
 #' 
-#' Since data is nested, this will repeat rows from the higher level data. Both x and y must be data frames.
+#' This function only works if you had previously used the \code{datavyu2csv.rb} script to export a Datavyu file to .csv
+#' This can be obtained from \url{http://github.com/iamamutt/datavyu/general}.
+#' \cr
+#' Note: If the same column name was used but has different number of arguments then you will get an error unless \code{asList=TRUE}.
+#' This function assumes that the .csv is structured in a way based on how the \code{datavyu2csv.rb} script exports data.
 #' 
-#' @param x top level data frame, (e.g., trial or block)
-#' @param y lower level data frame (e.g., eye gazes within trial)
-#' @param ids Suffixes to use to identify repeated column names
-#' @param keepall whether to keep all non-matching rows (true) or throw away non-matching (false).
-#' @param mergeby any additional common columns to merge by. Defaults to merging only by \code{file}.
+#' @param column The name of the column to import as used in the Datavyu .opf file
+#' @param folder Character string corresponding to the folder path to be scanned. Defaults to option \code{datavyur.folder}.
+#' @param asList Logical value indicating to return a list or data frame (default).
+#' @param append.colnames If \code{true}, add column name to each argument, 
+#' e.g., \code{column.arg}, instead of having column as a variable in the data. 
+#' @param classes List of new classes to override guessed classes when reading in .csv data. see \code{data.table::fread}
+#' @param ... Additional options passed to the function \code{data.table::fread}
+#'
 #' @examples
-#' # get data with some rows not nested
-#' x <- as.data.frame(datavyu_dat(n1=25, n2=2)[[1]])
-#' y <- datavyu_dat(n1=2, n2=100)[[2]]
-#' 
-#' z1 <- merge_nested(x, y)
-#' z2 <- merge_nested(x, y, ids=c(".higher", ".lower"), keepall=FALSE)
+#' import_column("childhands")
+#' import_column("childhands", append.colnames = TRUE)
 #' @export
-merge_nested <- function(x, y, ids=c(".1", ".2"), keepall=TRUE, mergeby=NULL) {
-    
-    if (class(x)[1] != "data.frame" | class(y)[1] != "data.frame") {
-        stop(simpleError("x and y must both be of class data.frame"))
+import_column <- function(column,
+                          folder = getOption("datavyur.folder"),
+                          asList = FALSE,
+                          append.colnames = TRUE,
+                          classes = getOption("datavyur.classlist"),
+                          ...)
+{
+    # check length of columns to import
+    if (length(column) > 1 & asList == FALSE) {
+        stop(simpleError(
+            paste0("Only 1 column name allowed in import_column. ",
+                   "If needing to import more than one column ",
+                   "set asList=TRUE to return a list object with each ",
+                   "item in the list as one of the columns")
+        ))
     }
     
-    mergeby <- unique(c("file", mergeby))
+    # get opf info based on columns
+    opf_info <- opf_and_col_selector(all.opf = TRUE, 
+                                     all.cols = column, 
+                                     folder = folder)
     
-    file_c_exists <- c("file" %in% names(x), "file" %in% names(y))
-    created_file <- FALSE
-    if (all(file_c_exists)==FALSE) {
-        x$file <- "None"
-        y$file <- "None"
-        created_file <- TRUE
-    } else if (sum(file_c_exists) == 1) {
-        stop(simpleError("One data frame had column file but not the other"))
-    }
+    # override classes
+    est_classes <- override_typeofs(opf_info, classes)
     
-    mrgdat <- lapply(as.character(unique(x$file)), function(j) {
-        #print(j)
-        xj <- x[x$file == as.character(j), ]
-        yj <- y[y$file == as.character(j), ]
+    # for each file in each column, read in data
+    # append col names if necessary
+    col_dat <- lapply(column, function(i) {
         
-        if (nrow(xj) == 0 | nrow(yj) == 0) {
-            return(NULL)
+        fpaths <- unique(opf_info[column == i, .(local, file)], by="local")
+        
+        dat <- lapply(fpaths$local, function(fin) {
+            DT <- opf_col_import(fin, i, est_classes, ...)
+            return(data.table::copy(DT))
+        })
+        
+        names(dat) <- fpaths$file
+        
+        if (append.colnames) {
+            lapply(dat, function(j) {
+                append_colname(j, i, c("file", "column"))
+            })
         }
-        
-        xj$temp_index_val_000xy <- 1:nrow(xj)
-        yj$temp_index_val_000xy <- NA
-        
-        for (i in 1:nrow(xj)) {
-            # i=1
-            onset_x <- as.numeric(xj[i, "onset"])
-            offset_x <- as.numeric(xj[i, "offset"])
-            y_rows <- as.numeric(yj[, "onset"]) >= onset_x & as.numeric(yj[, "offset"]) <= offset_x
-            
-            if (any(y_rows)) {
-                yj[y_rows, "temp_index_val_000xy"] <- i
-            }
-        }    
-        
-        z <- merge(xj, yj, by=c(mergeby, "temp_index_val_000xy"), suffixes=ids, all=keepall)
-        
-        return(z)
+        return(dat)
+    })
+    names(col_dat) <- column
+    
+    # combine separate files into one data.frame
+    dat <- lapply(col_dat, function(i) {
+        # check that the same columns exist between data frames
+        check_colnames_match(i)
+        # combine each .opf of the same column into one dataframe
+        as.data.frame(do.call(rbind, i))
     })
     
-    mrgdat <- do.call(rbind, mrgdat)
-    mrgdat$temp_index_val_000xy <- NULL
-    if (created_file) mrgdat$file <- NULL
-    return(mrgdat)
+    if (!asList) {
+        return(dat[[1]])
+    } else {
+        return(dat)
+    }
 }
+
+
+#' Merge nested data
+#' 
+#' Merges two Datavyu columns by onset/offset timestamps
+#' 
+#' Since data is nested, this will repeat rows from the higher level data.
+#' If any cell in the lower level is not within a cell in the higher level, it
+#' will not be in the final data set. This function is to be used only with truly
+#' nested data. For finer control over potentially overlapping cells see 
+#' \code{\link{temporal_align}} with the option \code{keep.frames=FALSE} and a high
+#' value for \code{fps} for better precision in aligning timestamps.
+#' 
+#' @param c1 top level column name as a character, (e.g., trial or block)
+#' @param c2 bottom level column name as a character (e.g., eye gazes within trial)
+#' @param folder Character string of the name of the folder to be scanned. Defaults to option \code{datavyur.folder}.
+#' @param ... Additional options passed to \code{data.table::fread}
+#' @examples
+#' # merge nested data, throwing away lower level cells that are not within higher level cells
+#' merged <- merged_nested("childhands", "parenthands")
+#' 
+#' # another way to merge nested, but contains NAs for cells that are not fully within one another
+#' # since these data are not nested, you can see how much is being thrown away compared to x
+#' y <- temporal_align(all.cols=c("childhands", "parenthands"), fps=60, keep.frames=FALSE)
+#' @export
+merge_nested <- function(c1, 
+                         c2, 
+                         folder = getOption("datavyur.folder"),
+                         classes = getOption("datavyur.classlist"),
+                         ...)
+{
+    
+    # grab upper and lower level data
+    dat_list <- import_column(c(c1, c2), 
+                              folder = folder,
+                              append.colnames = FALSE, 
+                              asList = TRUE, ...)
+    
+    l1 <- data.table::as.data.table(dat_list[[1]])
+    l2 <- data.table::as.data.table(dat_list[[2]])
+    
+    # ADD timestamps checks here
+    
+    # start merge
+    grab_within <- function(fname, cell, on, off, d2) {
+        d2_sub <- d2[file==fname & onset >= on & offset < off, ]
+        d2_sub[, `:=` (file=NULL)]
+        append_colname(d2_sub, c2, except="file")
+        return(d2_sub)
+    }
+    merged <- l1[, grab_within(file, ordinal, onset, offset, l2), by=names(l1)]
+    
+    # add rest of col prefixes
+    non_append <- c("file", names(merged)[grepl(paste0(c2,"."), names(merged))])
+    append_colname(merged, c1, except = non_append)
+    
+    return(as.data.frame(merged))
+}
+
 
 #' Temporally align data by frame
 #' 
@@ -329,7 +181,7 @@ merge_nested <- function(x, y, ids=c(".1", ".2"), keepall=TRUE, mergeby=NULL) {
 #' two events will line up in time. This is because the timestamps are converted to frame numbers based on chunking into bins.
 #' The larger the fps, the larger the bins, and more likely two events will line up in time.
 #' Note: Sometimes R doesn't get the right class of the imported column argument. 
-#' This can happen if you have weird characters in your data. Use \code{colClasses} to override this.
+#' This can happen if you have weird characters in your data. Use \code{classes} to override this.
 #' 
 #' @param all.opf Use all found .opf files from \code{folder} or specify .opf file names to use. Must 
 #' be a character vector with exact file name matches as seen inside one of the exported .csv files.
@@ -337,10 +189,10 @@ merge_nested <- function(x, y, ids=c(".1", ".2"), keepall=TRUE, mergeby=NULL) {
 #' as a character vector. 
 #' @param fps Common framerate to use for alignment. Defaults to 30 frames per second video.
 #' @param keep.frames Keep the frame_number column, which will result in a much larger dataset.
-#' If \code{keep.frames=FALSE}, then all you know is which two events overlap, not knowing for how long.
+#' If \code{keep.frames=FALSE}, then all you know is which two events overlap to some degree, not knowing for how long.
 #' If \code{keep.frames=TRUE} (default), you can calculate the number of frames that overlap between two events, and if fps is know,
 #' you can convert this total to milliseconds.
-#' @param colClasses List of new classes to override guessed classes when reading in .csv data. see \code{data.table::fread}
+#' @param classes List of new classes to override guessed classes when reading in .csv data. see \code{data.table::fread}
 #' @param folder Defaults to option \code{datavyur.folder}.
 #' @param ... Additional arguments passed to \code{data.table::fread}, 
 #' except \code{stringsAsFactors, colClasses, verbose, showProgress}
@@ -359,13 +211,13 @@ merge_nested <- function(x, y, ids=c(".1", ".2"), keepall=TRUE, mergeby=NULL) {
 #' # example data using additional arguments
 #' newClasses <- list(integer=c("childhands.look", "parenthands.look"), 
 #'                    character=c("childhands.hand", "parenthands.hand"))
-#' ex_data_aligned3 <- temporal_align(fps=10, colClasses=newClasses)
+#' ex_data_aligned3 <- temporal_align(fps=10, classes=newClasses)
 temporal_align <- function(all.opf = TRUE,
                            all.cols = TRUE,
                            folder = getOption("datavyur.folder"),
                            fps = 30,
                            keep.frames = TRUE,
-                           colClasses,
+                           classes = getOption("datavyur.classlist"),
                            ...)
 {
     
@@ -375,7 +227,7 @@ temporal_align <- function(all.opf = TRUE,
         all.cols = all.cols,
         folder = folder,
         fps = fps,
-        colClasses = colClasses,
+        class_overwrite = classes,
         ...
     )
     
@@ -384,9 +236,8 @@ temporal_align <- function(all.opf = TRUE,
         dat <- unique(dat)
     }
     
-    return(dat)
+    return(as.data.frame(dat))
 }
-
 
 
 #' Ordinal alignment
@@ -398,18 +249,18 @@ temporal_align <- function(all.opf = TRUE,
 #' @param all.opf All .opf files (\code{TRUE}) or a character vector of specific .opf files to use
 #' @param all.cols All columns from a .opf file or character vector of specific column names
 #' @param folder Search folder, defaults to \code{datavyur.folder} option
-#' @param colClasses Override column classes.
+#' @param classes Override column classes.
 #' @param ... Additional arguments passed to \code{data.table::fread}, 
-#' except \code{stringsAsFactors, colClasses, verbose, showProgress}
+#' except \code{stringsAsFactors, classes, verbose, showProgress}
 #' @return A data.frame with merged data aligned by cell number (ordinal value)
 #' @export
 #' @seealso \code{\link{temporal_align}}
 #' @examples
 #' ordinal_align()
-ordinal_align <- function(all.opf=TRUE, 
-                          all.cols=TRUE, 
-                          folder=getOption("datavyur.folder"),
-                          colClasses, 
+ordinal_align <- function(all.opf = TRUE,
+                          all.cols = TRUE,
+                          folder = getOption("datavyur.folder"),
+                          classes = getOption("datavyur.classlist"),
                           ...)
 {
     dat <- align_routine(
@@ -418,11 +269,12 @@ ordinal_align <- function(all.opf=TRUE,
         all.cols = all.cols,
         folder = folder,
         fps = NA,
-        colClasses = colClasses,
+        class_overwrite = classes,
         ...
     )
-    return(dat)
+    return(as.data.frame(dat))
 }
+
 
 #' Check columns for bad codes
 #' 
@@ -512,7 +364,6 @@ check_codes <- function(code_list,
     
     return(list(data=new_dat, bad_codes=bad_list))
 }
-
 
 
 #' Check for invalid timestamps
@@ -643,4 +494,116 @@ check_timestamps <- function(ts_list,
     }
     
     return(list(data=new_dat, ranges=bad_rng, durations=bad_dur))
+}
+
+#' R data to Datavyu .csv file
+#' 
+#' Process to transfer R data to Datavyu
+#' 
+#' Exports R data (as a list of lists or dataframes corresponding to Datavyu columns) to a .csv file. 
+#' This can then be used by Datavyu for saving as .opf and importing R data Datvyu. 
+#' Each list item is a different column in the final Datavyu file.
+#' NOTE: Datavyu cannot currently import the .csv files this function creates.
+#' To get the .csv file back into Datavyu, use the \code{csv2opf.rb} file found here: 
+#' \url{http://github.com/iamamutt/datavyu/general}.
+#' 
+#' @param rlist List of lists or data.frames. These are the columns to be used in the final Datavyu file.
+#' @param filename Filename of the .csv file to be created. Leave off extension. May specify path as prefix.
+#' @examples
+#' # First get example data to use
+#' example_data <- datavyu_dat()
+#' 
+#' # See how the example data is structured, as a list with another list and data.frame
+#' # Both the list and data.frame are named. If not named, one will be assigned.
+#' str(example_data)
+#' 
+#' # Export R list to a .csv file for importing into Datavyu
+#' r2datavyu(example_data, "example_file")
+#' @export
+r2datavyu <- function(rlist, filename="datavyur_export") {
+    
+    warnText <- paste0(
+        "\nNote: At the moment there doesn't seem to be a way for datavyu to import", 
+        " a .csv even though you can export to one. To get it back to .opf, use", 
+        " the csv2opf.rb ruby script in the general folder.\n"
+    )
+    
+    warning(simpleWarning(warnText))
+    
+    na2val <- function(x, v="") ifelse(is.na(x), v, x)
+    
+    top_digit <- "#4"
+    
+    n_col <- length(rlist)
+    col_names <- names(rlist)
+    
+    if (n_col < 1) stop(simpleError("no columns found in r list object"))
+    
+    # check for named rlist, add new names if necessary
+    if (is.null(col_names)) {
+        new_names <- paste0("datavyur", 1:n_col)
+        names(rlist) <- new_names
+    } else {
+        no_names <- col_names == ""
+        if (any(no_names)) {
+            new_names <- paste0("datavyur", 1:n_col)[no_names]
+            names(rlist)[no_names] <- new_names
+        }
+    }
+    
+    # go through each column structured as an r list
+    each_col <- lapply(1:n_col, function(col) {
+        
+        # get names of codes
+        codes <- rlist[[col]]
+        col_name <- col_names[col]
+        code_names <- names(codes)
+        
+        if (is.null(code_names)) {
+            stop(simpleError(
+                paste0("ordinal, onset, offset not found for: ", col_name)
+            ))
+        }
+        
+        # check of codes have these common arguments
+        common_code_names <- c("ordinal", "onset", "offset")
+        common_codes_l <- common_code_names %in% code_names
+        custom_code_names <- code_names[!code_names %in% common_code_names]
+        
+        if (!all(common_codes_l)) {
+            stop(simpleError(
+                paste0("ordinal, onset, offset not found for: ", col_name)
+            ))
+        }
+        
+        ts_ord <- codes$ordinal
+        ts_on <- ms2time(codes$onset)[ts_ord]
+        ts_off <- ms2time(codes$offset)[ts_ord]
+        
+        if (length(custom_code_names) == 0) {
+            codes$code1 <- rep(NA, length(ts_ord))
+            custom_code_names <- "code1"
+        }
+        
+        code_str <- paste0(custom_code_names, "|NOMINAL", collapse=",")
+        col_str <- paste0(col_name, " (MATRIX,true,)-", code_str)
+        
+        code_mat <- lapply(custom_code_names, function(cn) {
+            na2val(as.character(codes[[cn]])[ts_ord])
+        })
+        
+        code_mat <- cbind(ts_on, ts_off, do.call(cbind, code_mat))
+        
+        col_dat <- apply(code_mat, 1, function(s) {
+            code_text <- paste0("(", paste0(s[-c(1,2)], collapse=","), ")", collapse="")
+            paste0(s[1], ",", s[2], ",", code_text)
+        })
+        
+        return(c(col_str, col_dat))
+    })
+    
+    text_lines <- c(top_digit, c(each_col, recursive=TRUE))
+    out_file <- file(paste0(filename, ".csv"), "w")
+    writeLines(text_lines, out_file)
+    close(out_file)
 }
