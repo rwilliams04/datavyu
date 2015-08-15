@@ -9,22 +9,24 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r, echo=FALSE}
-knitr::opts_chunk$set(eval=FALSE, comment = ">")
+```{r, echo=FALSE, results='hide', message=FALSE}
+knitr::opts_chunk$set(eval=FALSE, comment = ">", message = FALSE)
 library(datavyur)
 ```
 
 
 # Basic `datavyur` usage
 
-This section will outline how to use some of the basic functions found in the `datavyur` package.
-To follow along, make sure you know where your `.csv` files have been saved when you used the `datavyu2csv.rb` script to convert `.opf` columns to individual `.csv` files. If you don't have `.csv` files to work with, you can use the default ones built into this package, as shown in the examples.
+This section will outline how to use some of the basic functions found in this package.
+To follow along, make sure you know where your `.csv` files have been saved when you ran the `datavyu2csv.rb` script to convert `.opf` columns to individual `.csv` files. If you don't have `.csv` files to work with, you can always use the default ones built into this package, as seen below in the examples.
 
 First, you need to load the `datavyur` library. Make sure it has already been installed before loading (obviously, this is already done if reading this documentation in R). If you're reading this on GitHub, go here to install:
 
 [How to install datavyur](https://github.com/iamamutt/datavyu#how-to-install)
 
-Use the R function `library` to load the `datvyur` package after it has been installed
+## Initial setup
+
+Use the R function `library` to load the `datvyur` package after it has been installed, like so:
 
 ```{r}
 # Load the datavyur library to use the functions below
@@ -51,10 +53,10 @@ getOption("datavyur.folder")
 These are the default files we'll be working with if not using a custom folder.
 
 ```{r, echo=FALSE, eval=TRUE}
-list.files(getOption("datavyur.folder"))
+list.files(getOption("datavyur.folder"), pattern = "\\.csv$")
 ```
 
-An alternative to setting the `datavyur.folder` R option is to just create an R object that holds the path to your data folder, like so:
+An alternative to setting the R option `datavyur.folder` is to create an R object that holds the path to your data folder. This is useful if working with multiple sources of data.
 
 ```{r}
 # Find the full path to where the .csv files have been saved
@@ -63,6 +65,8 @@ data_path <- normalizePath("path/to/data")
 ```
 
 You can then use this path as an argument for some of the functions, like when using `import_column` or `datavyu_col_search`, as you'll see later.
+
+## Getting help 
 
 The `datavyur` package provides several utility functions to simplify the data manipulation process. In the command window you can use the `?` operator to see the manual for each function. For example, to see the manual for the `import_column` function type the following in the command window:
 
@@ -78,7 +82,7 @@ Type in the code below to see a list of functions available in the `datavyur` pa
 ?datavyur
 ```
 
-## Viewing `.opf` column information
+## Viewing `.opf` column and code information
 
 The function `datavyu_col_search` will search through the path you specify and find all Datavyu files that have been already exported to `.csv` files, along with their column names and other attributes.
 
@@ -92,30 +96,39 @@ datavyu_col_search(data_path)
 
 The function will return a `data.frame` with the following information:
 
-- file: the name of the original `.opf` file that the column comes from
-- column: the column name corresponding to the current `.csv` file
-- args: the arguments (codes) found in that specific column
-- classes: what R things the data should be classified as
-- local: the full path to where the `.csv` file is located
+- **file**: the name of the original `.opf` file that the column comes from
+- **column**: the column name corresponding to the current `.csv` file
+- **args**: the arguments (codes) found in that specific column
+- **classes**: what R things the data should be classified as
+- **local**: the full path to where the `.csv` file is located
 
 
 ```{r, echo=FALSE, eval=TRUE, results='asis'}
 # if datavyur.folder option has been set
 fdat <- datavyu_col_search()
 fdat$local <- "./*.csv"
-knitr::kable(fdat)
+knitr::kable(head(fdat, 11))
 ```
 
 
 To view only the unique column names from each file you can use the optional argument `cnames`:
 
-```{r}
+
+```{r, eval=TRUE}
 # if datavyur.folder option has been set
 datavyu_col_search(unq=TRUE, cnames="column")
 ```
 
+Or to view both unique columns and codes in each column...
+
+
+```{r}
+# if datavyur.folder option has been set
+datavyu_col_search(unq=TRUE, cnames=c("column", "codes"))
+```
+
 ```{r, echo=FALSE, eval=TRUE, results='asis'}
-knitr::kable(datavyu_col_search(unq=TRUE, cnames="column"))
+knitr::kable(datavyu_col_search(unq=TRUE, cnames=c("column", "codes")))
 ```
 
 
@@ -123,14 +136,13 @@ knitr::kable(datavyu_col_search(unq=TRUE, cnames="column"))
 
 As previously mentioned, the Ruby script `datavyu2csv.rb` exports a `.csv` file for each column within each file. To combine them back together in R you'll use the function `import_column`. You'll need to know the path to your data again if not already set, and the exact names of the columns you're trying to import (using the `datavyu_col_search`, if you don't already know this).
 
-The code below will search the example `.csv` and look for columns with a specific name, them load them into R. This is assuming the folder path has already been set above in the options. If not, set the `folder` argument from this function to a path pointing to the data folder.
+The code below will search the example `.csv` and look for a column(s) with a specific name, them load them into R. This is assuming the folder path has already been set above in the options. If not, use the `folder` argument from this function to a path pointing to the data folder.
 
 ```{r, eval=TRUE}
-# load columns as separate data frames
 child_hands <- import_column("childhands") # or import_column("childhands", data_path)
 ```
 
-partial data obtained from `child_hands`:
+partial data.frame obtained from `child_hands`:
 
 ```{r, echo=FALSE, eval=TRUE, results='asis'}
 knitr::kable(head(child_hands))
@@ -149,51 +161,120 @@ knitr::kable(head(parent_hands))
 ```
 
 
+## Checking for invalid codes
 
-## Checking for invalid codes and timestamps
+Sometimes typos are invalid codes make it into the final export. You can check which codes are invalid by using the function `check_codes`. First let us load the `childhands` column data.
 
+```{r, eval=TRUE}
+# load column "childhands" and combine across separate .opf files
+child_hands <- import_column("childhands", append.colnames = TRUE)
+```
+
+Then we can make a list of column names and the allowed set of codes for each column in the data `child_hands`.
+Notice how that names of each item in the list below is the exact column name from the data.frame `child_hands`.
+And for each item it contains a vector of valid codes only. We will use this list to pass to the function `check_codes`.
+
+```{r, eval=TRUE}
+child_hands_codes <- list(
+    childhands.hand = c("left", "right", "both"),
+    childhands.look = c(1, 0)
+    )
+
+checked_list <- check_codes(child_hands_codes, child_hands)
+```
+
+The result of using the `check_codes` function is a list with two items, the new data with bad codes set to `NA`, and list called `bad_codes` which for each item in `child_hands_codes`, will return the indices and codes that were found to be invalid.
+
+The column `childhands.hand` had the following bad codes (these are just blank spaces and one "l")
+
+```{r, eval=TRUE}
+checked_list$bad_codes$childhands.hand
+```
+
+And the column `childhands.look` had the following bad codes (a 2 was found)
+
+```{r, eval=TRUE}
+checked_list$bad_codes$childhands.look
+```
+
+Overwrite old `child_hands` data with new data after setting bad codes to `NA`.
+
+```{r, eval=TRUE}
+child_hands <- checked_list$data
+```
+
+## Checking for invalid timestamps
+
+You can also see which timestamps are invalid, either the onset is below a specific minimum, above a maximum, or the duration between onset and offset is invalid. This can be done with the function `check_timestamps`. To use the function, you need to create a list of onset/offset pairs based on how they are named in the data. Using the `child_hands` data from above.
+
+```{r, eval=TRUE}
+timestamps_to_check <- list(
+    c(on="childhands.onset", off="childhands.offset")
+)
+
+checked_ts <- check_timestamps(timestamps_to_check, child_hands)
+```
+
+The function returns a list of new data with bad timestamps as `NA`, a list of timestamps out of range (if specified in the arguments), and a list of timestamps with bad durations.
+
+```{r, eval=TRUE}
+# overwrite old data with new data and bad timestamps as NA
+child_hands <- checked_ts$data
+
+# see bad timestamp ranges, no min and max was specified so nothing was bad
+checked_ts$ranges
+
+# see row indices with bad durations
+checked_ts$durations
+```
 
 ## Writing R Data to a `.csv` spreadsheet
 
-You can save any R `data.frame` to a spreadsheet that can be opened in Excel. You don't need the `datavyur` packages for this, and comes with standard R. You can do this for any R `data.frame`. This will write the data `z2`
+You can save any R `data.frame` to a spreadsheet that can be opened in Excel. You don't need the `datavyur` packages for this, and comes with standard R. You can do this for any R `data.frame`. This will write the data `child_hands` to a `.csv` file called `child_cleaned.csv`.
 
 ```{r}
-write.csv(z2, file="merged_data.csv", row.names=FALSE, na="")
+write.csv(child_hands, file="child_cleaned.csv", row.names=FALSE, na="")
 ```
 
 # Advanced usage
 
 ## Merging nested columns
 
-If you have columns that are originally nested within each other, you can get them back to this format by using the function `merge_nested`. The example below will attempt to merge two Datavyu columns by timestamps (even though these example data aren't really nested). Merging nested columns only works if you have two separate columns in your original `.opf` file, with cells in one column being nested within cells in another column. At the moment, it won't work with 3 or more nested columns (e.g., level 3 nested within level 2, which is nested within level 1).
+If two columns are nested, in that the cells in one column are completely contained within cells from another column, you can merge two columns together using the function `merge_nested`. You just need to specify the two column names you are trying to merge. If there is some overlap, meaning the cells are not truly nested, the cells in the lower level will be discarded. It is up to you to make sure your columns are nested, otherwise use `temporal_align`.
 
-All you need to really supply for the `merge_nested` function is the column name of the top level and the column name of the lower level.
-
-```{r}
-z1 <- merge_nested(child_hands, parent_hands)
+```{r, eval=TRUE}
+my_nested_data <- merge_nested("parenthands", "childhands")
 ```
 
-Since these exaple data aren't really nested, you'll get a lot of rows that won't merge. But you can still include them if you want. This is the default behavior of the function.
-
-The data `z1` above merges two data frames by column and includes any rows that couldn't be merged. If you see `NA` for any rows corresponding to `column.1` (the higher level), this means that timestamps were found for the lower level data but not for the higher level. This should not happen if you're data are truly nested. Fix any errors in your original `.opf` file if this is the case. An `NA` for `column.2` means that higher level timestamps exist, but no lower level data. This is okay since sometimes no observations exists for some higher level row.
-
-To merge without all the `NA` values, do the following. I'm also specifying different suffixes besides `.1` and `.2`, and setting the argument `keepall=FALSE` to remove all `NA`s.
-
-```{r}
-z2 <- merge_nested(child_hands, parent_hands, ids=c(".higher", ".lower"), keepall=FALSE)
+```{r, eval=TRUE, echo=FALSE, results='asis'}
+knitr::kable(head(my_nested_data, 15))
 ```
 
-## Align data by time or by cell number (ordinal)
+## Align data by time
+
+You can also align all the columns in your data folder by time, or just a select few of the columns. It is best if you know the framerate of the videos, that's because to align by time, the `temporal_align` function converts timestamps to frame number, then matches frames across columns and codes. Since timestamps are now frames, you'll receive a very large dataset for each file and each frame number, unless `keep.frames` is set to `FALSE`.
+
+```{r}
+t_aligned <- temporal_align()
+```
 
 
+## Align data by ordinal (cell number)
 
-## R Data to Datavyu
+If you want to align data across columns by the cell number instead of by time, you can use the function `ordinal_align`. This may be useful if the same cells are copied across multiple columns, but the timestamps don't change, but the codes in each column are different and you want to combine them.
 
-If you have R data that you want to convert back into something that the Datavyu program can recognize, you can do so with the function `r2datavyu`. You just need to make sure you have the columns `ordinal`, `onset`, and `offset` in your R data. You can pass all data frames you want to convert as a single `list` object. Each object in the list must be named (list items must have names)! Or the conversion to `.opf` will not work.
+```{r}
+o_aligned <- ordinal_align()
+```
+
+## R Data to Datavyu .opf
+
+If you have R data that you want to convert back into something that the Datavyu program can recognize, you can do so with the function `r2datavyu`. You just need to make sure you have the columns `onset`, and `offset` in your R data. You can pass all data frames you want to convert as a single `list` object. Each object in the list must be named (list items must have names)! Or the conversion to `.opf` will not work.
 
 ```{r}
 # provide a list of data to convert
-r2datavyu(list(chands=child_hands, phands=parent_hands), "myexport")
+fake_data <- datavyu_dat()
+r2datavyu(fake_data, "myexport")
 ```
 
 The function above will save the file as a weirdly formatted `.csv` file, but this is something that can be used in Datavyu, but not right away. Since the Datavyu program doesn't allow you to directly import these types of `.csv` files using the GUI, you need to use a script. Luckily I have provided one for you in the `general` folder from the github repository.
@@ -205,7 +286,7 @@ In Datavyu, run the script called `csv2opf.rb`. This will convert all `.csv` fil
 
 ## Making fake data
 
-The `datavyur` package provides a function to create fake data called `datavyu_dat`. Below I'm just creating two separate datasets using this function. This is handy for seeing how your data should be formatted if you want to save an R data back into Datavyu data.
+The `datavyur` package provides a function to create fake data called `datavyu_dat` to practice with some of the functions. Below I'm just creating two separate datasets using this function. This is handy for seeing how your data should be formatted if you want to save an R data back into Datavyu data.
 
 ```{r}
 x <- as.data.frame(datavyu_dat(n1=25, n2=2)[[1]])
@@ -214,21 +295,19 @@ y <- datavyu_dat(n1=2, n2=100)[[2]]
 
 ## Time Conversion
 
-Datavyu prints timestamps in milliseconds. You can convert this to a more readable format by using the function `ms2time`.
+Datavyu prints timestamps in milliseconds. You can convert this to a more readable format by using the function `ms2time`. Currently only allows for a max time of 24 hours.
 
-```{r}
-# print milliseconds to time string
-ms2time(x$onset)
-```
-
-You can also save this conversion back into your R data if you like.
-
-```{r}
-# save time string back into data frame
-x$onset_str <- ms2time(x$onset)
-x$offset_str <- ms2time(x$offset)
+```{r, eval=TRUE}
+# print milliseconds to time string (one hour)
+ms2time(3600000)
 ```
 
 ## Timestamps to frame numbers
 
+This will convert timestamps to a frame count, and will change depending on the value of `fps`.
 
+```{r, eval=TRUE}
+ms <- 999
+ts2frame(ms, fps = 30)
+ts2frame(ms, fps = 60)
+```

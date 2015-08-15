@@ -5,7 +5,7 @@
 \title{Scan .csv files for data}
 \usage{
 datavyu_col_search(folder = getOption("datavyur.folder"), unq = FALSE,
-  cnames = c("file", "column", "args", "classes", "local"))
+  cnames = c("file", "column", "codes", "classes", "local"))
 }
 \arguments{
 \item{folder}{Character string of the name of the folder to be scanned. Defaults to option \code{datavyur.folder}.}
@@ -16,7 +16,7 @@ datavyu_col_search(folder = getOption("datavyur.folder"), unq = FALSE,
 }
 \value{
 data.frame with .csv info. The variable \code{file} is the original .opf file name used.
-\code{column} is the name of the column within the .opf file. \code{args} are the argument names used.
+\code{column} is the name of the column within the .opf file. \code{codes} are the argument names used.
 \code{classes} are the guessed classes for each argument based on R import functions.
 \code{local} is the .csv file name and location for a particular column and .opf file.
 }
