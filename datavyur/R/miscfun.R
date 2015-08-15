@@ -85,7 +85,8 @@ ms2time <- function(timestamp,
                     unit="%H:%M:%S", 
                     msSep=":") 
 {
-    if (any(timestamp >= 60*60*24*1000)) stop(simpleError("More than 24 hours. Can't do days"))
+    # 60*60*1000*23.99999972209
+    if (any(timestamp >= 24*60*60*1000)) stop(simpleError("More than 24 hours. Can't do days"))
     sec <- timestamp/1000
     ms <- formatC(x=round((sec-trunc(sec))*1000, digits=3), 
                   digits=3, width=3, format="d", flag="0")
