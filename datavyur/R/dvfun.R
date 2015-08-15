@@ -11,7 +11,7 @@
 #' @param unq Return only unique column names
 #' @param cnames Name of columns to return if \code{unq=TRUE}.
 #' @return data.frame with .csv info. The variable \code{file} is the original .opf file name used.
-#' \code{column} is the name of the column within the .opf file. \code{args} are the argument names used.
+#' \code{column} is the name of the column within the .opf file. \code{codes} are the argument names used.
 #' \code{classes} are the guessed classes for each argument based on R import functions.
 #' \code{local} is the .csv file name and location for a particular column and .opf file.
 #' @examples
@@ -19,7 +19,7 @@
 #' @export
 datavyu_col_search <- function(folder=getOption("datavyur.folder"), 
                                unq=FALSE, 
-                               cnames=c("file", "column", "args", "classes", "local"))
+                               cnames=c("file", "column", "codes", "classes", "local"))
 {
     message("Searching through .csv files for valid .opf data...")
     dvcols <- check_opf_data(folder=folder)
@@ -407,7 +407,7 @@ check_timestamps <- function(ts_list,
 {
     
     # check if list
-    if (class(code_list) != "list") {
+    if (class(ts_list) != "list") {
         stop(simpleError(
             "ts_list must be a list object. see ?check_timestamps"
         ))

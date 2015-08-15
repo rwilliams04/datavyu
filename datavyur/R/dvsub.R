@@ -50,7 +50,7 @@ check_opf_data <- function(folder=getOption("datavyur.folder"))
             d_file <- DT[, unique(file)]
             c_type <- DT[, unique(column)]
             dat <- data.table::data.table(
-                args=args_in_col,
+                codes=args_in_col,
                 classes = sapply(DT[, args_in_col, with=FALSE], typeof),
                 file=d_file,
                 column=c_type,
@@ -71,7 +71,7 @@ check_opf_data <- function(folder=getOption("datavyur.folder"))
     
     data.table::setkey(dat)
     dat <- unique(dat)
-    data.table::setcolorder(dat, c("file", "column", "args", "classes", "local"))
+    data.table::setcolorder(dat, c("file", "column", "codes", "classes", "local"))
     
     return(dat)
 }
@@ -83,12 +83,12 @@ opf_and_col_selector <- function(all.opf=TRUE,
 {
     fdat <- check_opf_data(folder=folder)
     
-    est_classes <- fdat[, .N, by=list(column, args, classes)][order(args, N, classes), ]
-    est_classes <- est_classes[, .(classes=classes[which.max(N)]), by=list(column, args)]
+    est_classes <- fdat[, .N, by=list(column, codes, classes)][order(codes, N, classes), ]
+    est_classes <- est_classes[, .(classes=classes[which.max(N)]), by=list(column, codes)]
     est_classes[classes=="logical", classes := "character"]
     
     fdat[, classes := NULL]
-    fdat <- merge(fdat, est_classes, by=c("column", "args"), all=TRUE)
+    fdat <- merge(fdat, est_classes, by=c("column", "codes"), all=TRUE)
     
     if (is.logical(all.opf) && isTRUE(all.opf)) {
         fnames <- unique(fdat$file)
@@ -142,8 +142,8 @@ opf_and_col_selector <- function(all.opf=TRUE,
 override_typeofs <- function(opf_info, class_overwrite) {
     
     # classes for each argument, add ordinal
-    est_classes <- unique(opf_info[, c("column", "args", "classes"), with=FALSE])
-    est_classes[, both := paste0(column, ".", args)]
+    est_classes <- unique(opf_info[, c("column", "codes", "classes"), with=FALSE])
+    est_classes[, both := paste0(column, ".", codes)]
     
     if (!is.null(class_overwrite)) {
         if (class(class_overwrite) != "list") {
@@ -161,7 +161,7 @@ override_typeofs <- function(opf_info, class_overwrite) {
     return(est_classes)
 }
 
-# import datavyur .csv file, check classes and args
+# import datavyur .csv file, check classes and codes
 opf_col_import <- function(fpath, cname, est_classes, ...) {
     
     # class defaults
@@ -196,14 +196,14 @@ opf_col_import <- function(fpath, cname, est_classes, ...) {
     # remove unecessary column id
     DT[, column := NULL]
     
-    # check existing columns and args
+    # check existing columns and codes
     current_cols <- est_classes[column == cname, ]
-    need_add <- current_cols[!args %in% names(DT), .(args, classes)]
+    need_add <- current_cols[!codes %in% names(DT), .(codes, classes)]
     
     # add arguments if missing
     if (nrow(need_add) > 0) {
         for (i in 1:nrow(need_add)) {
-            DT[, eval(need_add[i, args]) := NA]
+            DT[, eval(need_add[i, codes]) := NA]
         }
     }
     
@@ -213,7 +213,7 @@ opf_col_import <- function(fpath, cname, est_classes, ...) {
     data.table::setcolorder(DT, c(sort_first, sort_last))
     
     # overwrite classes from estimated classes
-    check_args <- current_cols[, args]
+    check_args <- current_cols[, codes]
     check_class <- current_cols[, classes]
     for (i in 1:length(check_args)) {
         if (typeof(DT[[check_args[i]]]) != check_class[i]) {
@@ -242,7 +242,7 @@ align_routine <- function(ordinal,
         id_cols <- c("file", "frame_number")
     }
     
-    # get list of opf files, columns, args, locations
+    # get list of opf files, columns, codes, locations
     message("Searching through .csv files for valid .opf data...")
     opf_info <- opf_and_col_selector(all.opf = all.opf, 
                                      all.cols = all.cols, 
@@ -305,7 +305,7 @@ align_routine <- function(ordinal,
     # some files may not have all the necessary arguments
     # add them if necessary
     if (ordinal) { # ordinal used as id_col
-        est_classes <- est_classes[args !=  "ordinal", ]
+        est_classes <- est_classes[codes !=  "ordinal", ]
     }
     opf_list <- add_columns(opf_list, est_classes)
     
@@ -338,10 +338,10 @@ name_sort <- function(opf_list, est_classes) {
     est_classes[, cord := as.integer(NA)]
     morder <- c("ordinal", "onset", "offset")
     for (i in 1:length(morder)) {
-        est_classes[args == morder[i], cord := i]
+        est_classes[codes == morder[i], cord := i]
     }
     est_classes[is.na(cord), cord := length(morder)+1]
-    arg_order <- est_classes[order(column, cord, args), both]
+    arg_order <- est_classes[order(column, cord, codes), both]
     new_n <- n[n %in% c("file", "ordinal", "frame_number", arg_order)]
     
     if (length(new_n) != length(n)) {
@@ -367,7 +367,7 @@ reshape_by_frame <- function(DT, fps) {
     return(DT)
 }
 
-# add column.args suffixes
+# add column.codes suffixes
 append_colname <- function(DT, clm, except=NA) {
     new_suffixes <- names(DT)[!names(DT) %in% except]
     data.table::setnames(DT, new_suffixes, paste0(clm, ".", new_suffixes))
