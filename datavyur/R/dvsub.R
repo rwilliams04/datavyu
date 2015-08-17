@@ -310,7 +310,7 @@ align_routine <- function(ordinal,
     opf_list <- add_columns(opf_list, est_classes)
     
     # names of columns for all list items
-    all_names <- name_sort(opf_list, est_classes)
+    all_names <- unique(unlist(lapply(opf_list, function(i) names(i))))
     
     # begin merging all files into one large dataset
     opf_merged <- multi_merge(opf_list, by=all_names, all=TRUE)
@@ -329,12 +329,13 @@ align_routine <- function(ordinal,
     
     message("Merge successful!")
     
+    data.table::setcolorder(opf_merged, name_sort(names(opf_merged), est_classes))
+    
     return(opf_merged)
 }
 
 # get names but with custom ordering
-name_sort <- function(opf_list, est_classes) {
-    n <- unique(unlist(lapply(opf_list, function(i) names(i))))
+name_sort <- function(n, est_classes) {
     est_classes[, cord := as.integer(NA)]
     morder <- c("ordinal", "onset", "offset")
     for (i in 1:length(morder)) {
@@ -342,13 +343,16 @@ name_sort <- function(opf_list, est_classes) {
     }
     est_classes[is.na(cord), cord := length(morder)+1]
     arg_order <- est_classes[order(column, cord, codes), both]
-    new_n <- n[n %in% c("file", "ordinal", "frame_number", arg_order)]
+    arg_order <- c("file", "ordinal", "frame_number", arg_order)
     
-    if (length(new_n) != length(n)) {
+    if (all(n %in% arg_order)) {
+        new_n <- n[na.omit(match(arg_order, n))]
+    } else {
         stop(simpleError(
-            "error with column arrange"
-        ))
+            "important columns missing during column arrange"
+        ))    
     }
+    
     return(new_n)
 }
 
