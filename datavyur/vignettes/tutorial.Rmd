@@ -24,6 +24,12 @@ First, you need to load the `datavyur` library. Make sure it has already been in
 
 [How to install datavyur](https://github.com/iamamutt/datavyu#how-to-install)
 
+After you read through this tutorial it's a good idea to go ahead and start on the tutorial regarding an introduction to data manipulation and plotting with an empahsis on the `datavyur` package. In the packages tab in RStudio, find and click the `datavyur` link, then click "User guides, package vignetts and other documentation." This will list all available tutorials if your package has built them. See "Data Manipulation and Plotting" or paste the following into your R Console:
+
+```{r, eval=FALSE}
+vignette("data_manipulation", "datavyur")
+```
+
 ## Initial setup
 
 Use the R function `library` to load the `datvyur` package after it has been installed, like so:

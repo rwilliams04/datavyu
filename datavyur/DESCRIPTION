@@ -1,12 +1,12 @@
 Package: datavyur
 Type: Package
 Title: Functions to handle Datavyu data
-Version: 1.0.0
-Date: 2015-08-13
+Version: 1.0.1
+Date: 2015-08-21
 Authors@R: person("Joseph", "Burling", email = "josephburling@gmail.com", role = c("aut", "cre"))
 Description: A set of functions to handle import/export between R and Datavyu
 License: MIT
 Imports: data.table
 Roxygen: list(wrap = FALSE)
-Suggests: knitr
+Suggests: knitr, dplyr
 VignetteBuilder: knitr
