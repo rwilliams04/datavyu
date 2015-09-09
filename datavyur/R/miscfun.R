@@ -136,3 +136,70 @@ ts2frame <- function(x,
     }
 }
 
+#' Copies of rows with invalid codes
+#'
+#' @param dat Original data object used on the function \code{check_codes}
+#' @param checked_list The list returned after using \code{check_codes}
+#'
+#' @return a list with subsets of data corresponding to rows with invalid codes
+#' @export
+#'
+#' @examples
+#' # see check_codes first, after that do:
+#' bad_copies <- bad_code_copies(dat, codes_checked)
+bad_code_copies <- function(dat, checked_list) {
+    bad_codes <- checked_list$bad_codes
+    
+    if (is.null(bad_codes)) {
+        stop("Could not find bad_codes list item. Did you use check_codes function?")
+    }
+    
+    copies <- lapply(bad_codes, function(i) {
+        if (nrow(i) > 0) {
+            d <- dat[i$index, ]
+            return(d)
+        }
+    })
+    return(copies)
+}
+
+#' Copies of rows with invalid timestamps
+#'
+#' @param dat Original data object used on the function \code{check_timestamps}
+#' @param checked_list The list returned after using \code{check_timestamps}
+#'
+#' @return a list with subsets of data corresponding to rows with invalid timestamps
+#' @export
+#'
+#' @examples
+#' # see check_timestamps first, after that do:
+#' bad_timestamps <- bad_ts_copies(dat, ts_checked)
+bad_ts_copies <- function(dat, checked_list) {
+    bad_ranges <- checked_list$ranges
+    bad_durations <- checked_list$durations
+    
+    if (!is.null(bad_ranges)) {
+        ranges <- lapply(bad_ranges, function(i) {
+            if (length(i) > 0) {
+                d <- dat[i, ]
+                return(d)
+            }
+        })
+    } else {
+        stop("Could not find ranges list item. Did you use check_timestamps function?")
+    }
+    
+    if (!is.null(bad_durations)) {
+        durations <- lapply(bad_durations, function(i) {
+            if (length(i) > 0) {
+                d <- dat[i, ]
+                return(d)
+            }
+        })
+    } else {
+        durations <- NULL
+    }
+    
+    return(list(ranges=ranges, durations=durations))
+}
+
