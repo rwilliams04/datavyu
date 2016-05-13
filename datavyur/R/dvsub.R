@@ -98,6 +98,7 @@ opf_and_col_selector <- function(all.opf=TRUE,
     } else if (is.character(all.opf)) {
         fnames <- fdat[file %in% all.opf, unique(file)]
         if (length(fnames) != length(all.opf)) {
+            #rev(unlist(strsplit(s, "__")))[1]
             errm <- paste0(c("Could not find files: ", 
                              paste0(all.opf[!all.opf %in% fnames], 
                                     collapse = ", ")), 

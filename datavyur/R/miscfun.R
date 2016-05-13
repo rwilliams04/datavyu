@@ -14,7 +14,11 @@
 #' @examples
 #' my_data <- datavyu_dat()
 #' @export
-datavyu_dat <- function(n1=10, n2=15) {
+datavyu_dat <- function(n1 = 10, n2 = 15) {
+
+    n1 <- max(c(1, n1))
+    n2 <- max(c(1, n2))
+
     ch_on <- sort(round(runif(n1, 0, 3600000)))
     pr_on <- sort(round(runif(n2, 0, 3600000)))
     

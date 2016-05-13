@@ -114,6 +114,144 @@ import_column <- function(column,
     }
 }
 
+#' Import datavyu data from file name(s)
+#'
+#' @inheritParams import_column
+#' @param file A character vector of file names
+#'
+#' @return A list or data.frame
+#' @export
+import_file <- function(file,
+                        folder = getOption("datavyur.folder"),
+                        asList = FALSE,
+                        append.colnames = TRUE,
+                        classes = getOption("datavyur.classlist"),
+                        ...) {
+    
+    # check length of columns to import
+    if (!asList) append.colnames <- TRUE
+    
+    # get opf info based on columns
+    opf_info <- opf_and_col_selector(all.opf = file, 
+                                     all.cols = TRUE, 
+                                     folder = folder)
+    
+    # override classes
+    est_classes <- override_typeofs(opf_info, classes)
+    
+    # for each file in each column, read in data
+    # append col names if necessary
+    file_dat <- lapply(file, function(i) {
+        
+        fpaths <- unique(opf_info[file == i, .(local, column)], by="local")
+        
+        nc <- nrow(fpaths)
+        
+        if (nc > 0) {
+            
+        }
+        
+        dat <- lapply(1:nc, function(j) {
+            fpath <- fpaths$local[j]
+            cname <- fpaths$column[j]
+            DT <- opf_col_import(fpath, cname, est_classes, ...)
+            return(DT)
+        })
+        
+        names(dat) <- fpaths$column
+        
+        if (append.colnames) {
+            lapply(1:nc, function(j) {
+                append_colname(dat[[j]], names(dat)[j], except=c("file", "column"))
+            })
+        }
+        return(dat)
+    })
+    names(file_dat) <- file
+    
+    if (!asList) {
+        unq_names <- unique(unlist(lapply(file_dat, names)))
+        DTl <- lapply(file_dat, function(i) {
+            DT <- data.table::rbindlist(i, use.names = TRUE, fill = TRUE)
+        })
+        
+        file_dat <- data.table::rbindlist(DTl, use.names = TRUE, fill = TRUE)
+        file_dat <- as.data.frame(file_dat)
+    }
+    return(file_dat)
+}
+
+#' Combine multiple files into a single list
+#'
+#' @inheritParams import_file
+#' @param merge.cells If the same column names exist, you can merge cells or set as two different cols.
+#'
+#' @return A list
+#' @export
+merge_opf_files_for_export <- function(file,
+                                       merge.cells = TRUE,
+                                       folder = getOption("datavyur.folder"),
+                                       classes = getOption("datavyur.classlist"),
+                                       ...) {
+    
+    file_list <- import_file(file, asList = TRUE, folder = folder, 
+                             append.colnames = FALSE, classes = classes, ...)
+    
+    file_cols <- unlist(lapply(file_list, names))
+    same_cols <- unique(file_cols[duplicated(file_cols)])
+    diff_cols <- file_cols[!file_cols %in% same_cols]
+    
+    merge_list <- function(file_list, list_cols, append_names, append_data) {
+        
+        col_collect <- lapply(file_list, function(i) {
+            cols <- names(i)
+            list_sub <- cols[cols %in% list_cols]
+            if (length(list_sub) > 0) {
+                return(i[list_sub])
+            }
+            return(invisible(NULL))
+        })
+        
+        unq_col_names <- unlist(lapply(col_collect, names))
+        col_collect <- do.call(c, col_collect)
+        names(col_collect) <- unq_col_names
+        
+        if (append_names) {
+            
+            col_collect_names <- names(col_collect)
+            for (i in 1:length(list_cols)) {
+                scol <- list_cols[i]
+                which_same <- scol == col_collect_names
+                col_collect_names[which_same] <- paste0(scol, 1:sum(which_same))
+            }   
+            names(col_collect) <- col_collect_names
+        }
+        
+        if (append_data) {
+            col_collect_names <- names(col_collect)
+            col_collect <- lapply(list_cols, function(i) {
+                which_same <- i == col_collect_names
+                if (any(which_same)) {
+                    data.table::rbindlist(col_collect[which(which_same)], use.names = TRUE, fill = TRUE)
+                }
+            })
+            names(col_collect) <- list_cols
+        }
+        
+        return(col_collect)
+    }
+    
+    diff_list <- merge_list(file_list, diff_cols, FALSE, FALSE)
+    same_list <- merge_list(file_list, same_cols, !merge.cells, merge.cells)
+    
+    merged_lists <- c(same_list, diff_list)
+    merged_lists <- lapply(merged_lists, function(i) {
+        dt <- as.list(data.table::copy(i))
+        return(dt[!names(dt) %in% "file"])
+    })
+    
+    return(merged_lists)
+}
 
 #' Merge nested data
 #' 
@@ -530,6 +668,15 @@ r2datavyu <- function(rlist, filename="datavyur_export") {
     
     warning(simpleWarning(warnText))
     
+    if (any(class(rlist) != "list")) {
+        if (any(class(rlist) == "data.frame")) {
+            rlist <- list(rlist)
+        } else {
+            stop('Input must be a list of lists, list of data.frames, or a single data.frame')
+        }
+    }
+    
+    
     na2val <- function(x, v="") ifelse(is.na(x), v, x)
     
     top_digit <- "#4"
@@ -551,6 +698,8 @@ r2datavyu <- function(rlist, filename="datavyur_export") {
         }
     }
     
+    col_names <- names(rlist)
+    
     # go through each column structured as an r list
     each_col <- lapply(1:n_col, function(col) {
         
@@ -565,7 +714,7 @@ r2datavyu <- function(rlist, filename="datavyur_export") {
             ))
         }
         
-        # check of codes have these common arguments
+        # check if codes have these common arguments
         common_code_names <- c("ordinal", "onset", "offset")
         common_codes_l <- common_code_names %in% code_names
         custom_code_names <- code_names[!code_names %in% common_code_names]
@@ -603,7 +752,7 @@ r2datavyu <- function(rlist, filename="datavyur_export") {
     })
     
     text_lines <- c(top_digit, c(each_col, recursive=TRUE))
-    out_file <- file(paste0(filename, ".csv"), "w")
+    out_file <- file(paste0(tools::file_path_sans_ext(filename), ".csv"), "w")
     writeLines(text_lines, out_file)
     close(out_file)
 }
