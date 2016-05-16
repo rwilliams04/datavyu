@@ -186,8 +186,12 @@ import_file <- function(file,
 #' @inheritParams import_file
 #' @param merge.cells If the same column names exist, you can merge cells or set as two different cols.
 #'
-#' @return A list
+#' @return A list for export
 #' @export
+#' @examples 
+#' files_to_merge <- c("dyad1", "dyad2", "dyad3")
+#' export_list <- merge_opf_files_for_export(files_to_merge)
+#' r2datavyu(export_list, "merged_file_name")
 merge_opf_files_for_export <- function(file,
                                        merge.cells = TRUE,
                                        folder = getOption("datavyur.folder"),
@@ -243,11 +247,13 @@ merge_opf_files_for_export <- function(file,
     
     diff_list <- merge_list(file_list, diff_cols, FALSE, FALSE)
     same_list <- merge_list(file_list, same_cols, !merge.cells, merge.cells)
-    
     merged_lists <- c(same_list, diff_list)
+    
     merged_lists <- lapply(merged_lists, function(i) {
-        dt <- as.list(data.table::copy(i))
-        return(dt[!names(dt) %in% "file"])
+        i <- i[order(onset),]
+        i[, ordinal := 1:.N]
+        i[, file := NULL]
+        return(as.data.frame(i))
     })
     
     return(merged_lists)

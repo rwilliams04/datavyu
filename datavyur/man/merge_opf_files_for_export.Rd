@@ -20,9 +20,14 @@ merge_opf_files_for_export(file, merge.cells = TRUE,
 \item{...}{Additional options passed to the function \code{data.table::fread}}
 }
 \value{
-A list
+A list for export
 }
 \description{
 Combine multiple files into a single list
+}
+\examples{
+files_to_merge <- c("dyad1", "dyad2", "dyad3")
+export_list <- merge_opf_files_for_export(files_to_merge)
+r2datavyu(export_list, "merged_file_name")
 }
 
