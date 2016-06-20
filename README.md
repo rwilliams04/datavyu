@@ -77,3 +77,4 @@ Once the `datavyur` package has been installed, view the tutorial to get started
 vignette(topic = "tutorial", package = "datavyur")
 ```
 
+[![Analytics](https://ga-beacon.appspot.com/UA-63217126-3/datavyur/readme?pixel)](https://github.com/igrigorik/ga-beacon)
