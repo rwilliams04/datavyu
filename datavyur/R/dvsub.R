@@ -25,17 +25,20 @@ frame_expand <- function(onset, offset) {
 }
 
 # read all .csv data from folder and check for valid format
-check_opf_data <- function(folder=getOption("datavyur.folder"))
+check_opf_data <- function(folder = getOption("datavyur.folder"), files = FALSE)
 {
-    folder <- normalizePath(folder, winslash = "/", mustWork = TRUE)
-    filepaths <- list.files(folder, full.names=TRUE, pattern="\\.csv$")
-    
-    if (length(filepaths) == 0) {
-        stop(simpleError(
-            paste0("No .csv files found in ", folder)
-        ))
+    if (is.null(folder) && !is.logical(files)) {
+        filepaths <- files
+    } else {
+        folder <- normalizePath(folder, winslash = "/", mustWork = TRUE)
+        filepaths <- list.files(folder, full.names=TRUE, pattern="\\.csv$")
+        if (length(filepaths) == 0) {
+            stop(simpleError(
+                paste0("No .csv files found in ", folder)
+            ))
+        }
     }
-    
+
     static_names <- c("file", "column")
     out_list <- lapply(filepaths, function(x) {
         DT <- suppressWarnings(
@@ -77,34 +80,20 @@ check_opf_data <- function(folder=getOption("datavyur.folder"))
 }
 
 # subset read-in data, estimate classes
-opf_and_col_selector <- function(all.opf=TRUE, 
-                                 all.cols=TRUE, 
-                                 folder=getOption("datavyur.folder"))
+opf_and_col_selector <- function(all.opf = TRUE, 
+                                 all.cols = TRUE, 
+                                 folder = getOption("datavyur.folder")
+                                 )
 {
-    fdat <- check_opf_data(folder=folder)
-    
-    est_classes <- fdat[, .N, by=list(column, codes, classes)][order(codes, N, classes), ]
-    est_classes <- est_classes[, .(classes=classes[which.max(N)]), by=list(column, codes)]
-    est_classes[classes=="logical", classes := "character"]
-    
-    fdat[, classes := NULL]
-    fdat <- merge(fdat, est_classes, by=c("column", "codes"), all=TRUE)
-    
     if (is.logical(all.opf) && isTRUE(all.opf)) {
+        fdat <- check_opf_data(folder = folder)
         fnames <- unique(fdat$file)
         if (length(fnames) == 0) {
             stop(simpleError("Could not find any files from all.opf input"))
         }
     } else if (is.character(all.opf)) {
-        fnames <- fdat[file %in% all.opf, unique(file)]
-        if (length(fnames) != length(all.opf)) {
-            #rev(unlist(strsplit(s, "__")))[1]
-            errm <- paste0(c("Could not find files: ", 
-                             paste0(all.opf[!all.opf %in% fnames], 
-                                    collapse = ", ")), 
-                           collapse = " ")
-            stop(simpleError(errm))
-        }
+        fdat <- check_opf_data(folder = folder, files = all.opf)
+        fnames <- fdat$file
     } else {
         fErr <- paste0("Set all.opf to TRUE or use a character vector",
                        " of opf file names. You can find names of files", 
@@ -112,6 +101,13 @@ opf_and_col_selector <- function(all.opf=TRUE,
                        " datavyu2csv.rb")
         stop(simpleError(fErr))
     }
+
+    est_classes <- fdat[, .N, by=list(column, codes, classes)][order(codes, N, classes), ]
+    est_classes <- est_classes[, .(classes=classes[which.max(N)]), by=list(column, codes)]
+    est_classes[classes == "logical", classes := "character"]
+    
+    fdat[, classes := NULL]
+    fdat <- merge(fdat, est_classes, by = c("column", "codes"), all=TRUE)
     
     if (is.logical(all.cols) && isTRUE(all.cols)) {
         cnames <- unique(fdat$column)

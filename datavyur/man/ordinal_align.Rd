@@ -9,16 +9,20 @@ ordinal_align(all.opf = TRUE, all.cols = TRUE,
   classes = getOption("datavyur.classlist"), ...)
 }
 \arguments{
-\item{all.opf}{All .opf files (\code{TRUE}) or a character vector of specific .opf files to use}
+\item{all.opf}{Use all found .opf files from \code{folder} or specify .opf file names to use. Must 
+be a character vector with exact file name matches as seen inside one of the exported .csv files, which are 
+just the original file names with .opf removed. If you choose to provide full path and file names, 
+you MUST set \code{folder=NULL}.}
 
-\item{all.cols}{All columns from a .opf file or character vector of specific column names}
+\item{all.cols}{Use all columns found in \code{folder} or only use specified column names entered
+as a character vector.}
 
-\item{folder}{Search folder, defaults to \code{datavyur.folder} option}
+\item{folder}{Defaults to option \code{datavyur.folder}.}
 
-\item{classes}{Override column classes.}
+\item{classes}{List of new classes to override guessed classes when reading in .csv data. see \code{data.table::fread}}
 
 \item{...}{Additional arguments passed to \code{data.table::fread}, 
-except \code{stringsAsFactors, classes, verbose, showProgress}}
+except \code{stringsAsFactors, colClasses, verbose, showProgress}}
 }
 \value{
 A data.frame with merged data aligned by cell number (ordinal value)

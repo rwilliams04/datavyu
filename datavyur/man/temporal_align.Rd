@@ -10,7 +10,9 @@ temporal_align(all.opf = TRUE, all.cols = TRUE,
 }
 \arguments{
 \item{all.opf}{Use all found .opf files from \code{folder} or specify .opf file names to use. Must 
-be a character vector with exact file name matches as seen inside one of the exported .csv files.}
+be a character vector with exact file name matches as seen inside one of the exported .csv files, which are 
+just the original file names with .opf removed. If you choose to provide full path and file names, 
+you MUST set \code{folder=NULL}.}
 
 \item{all.cols}{Use all columns found in \code{folder} or only use specified column names entered
 as a character vector.}

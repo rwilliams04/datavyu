@@ -328,7 +328,9 @@ merge_nested <- function(c1,
 #' This can happen if you have weird characters in your data. Use \code{classes} to override this.
 #' 
 #' @param all.opf Use all found .opf files from \code{folder} or specify .opf file names to use. Must 
-#' be a character vector with exact file name matches as seen inside one of the exported .csv files.
+#' be a character vector with exact file name matches as seen inside one of the exported .csv files, which are 
+#' just the original file names with .opf removed. If you choose to provide full path and file names, 
+#' you MUST set \code{folder=NULL}. 
 #' @param all.cols Use all columns found in \code{folder} or only use specified column names entered
 #' as a character vector. 
 #' @param fps Common framerate to use for alignment. Defaults to 30 frames per second video.
@@ -390,12 +392,7 @@ temporal_align <- function(all.opf = TRUE,
 #'
 #' See \code{\link{temporal_align}} for more details on function usage. 
 #' 
-#' @param all.opf All .opf files (\code{TRUE}) or a character vector of specific .opf files to use
-#' @param all.cols All columns from a .opf file or character vector of specific column names
-#' @param folder Search folder, defaults to \code{datavyur.folder} option
-#' @param classes Override column classes.
-#' @param ... Additional arguments passed to \code{data.table::fread}, 
-#' except \code{stringsAsFactors, classes, verbose, showProgress}
+#' @inheritParams temporal_align
 #' @return A data.frame with merged data aligned by cell number (ordinal value)
 #' @export
 #' @seealso \code{\link{temporal_align}}
